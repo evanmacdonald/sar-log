@@ -119,12 +119,13 @@ Do not implement these in any PR. From charter §9:
 - [ ] **PR 1 — Xcode project bootstrap**
   - SwiftUI app target `SARLog`, folder layout, `.gitignore`.
   - `README.md` linking to `CHARTER.md` and `PLAN.md`.
-  - `CLAUDE.md` at repo root with: project orientation, folder map,
-    pointer to this plan, and a reminder of universal acceptance
-    criteria. This is the entry doc for future Claude Code agents.
+  - `AGENTS.md` already exists at repo root as the agent entry doc;
+    update its "Repo layout" section to reflect the new Xcode
+    structure.
   - App launches to an empty root view. No features.
-  - **Acceptance:** repo opens in Xcode and builds; README + CLAUDE.md
-    in place; `git status` clean on a fresh clone.
+  - **Acceptance:** repo opens in Xcode and builds; README in place;
+    AGENTS.md layout section reflects the new structure; `git status`
+    clean on a fresh clone.
 
 - [ ] **PR 2 — CI pipeline**
   - GitHub Actions workflow on push / PR to `main`.
