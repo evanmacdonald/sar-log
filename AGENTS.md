@@ -1,6 +1,7 @@
-# CLAUDE.md
+# AGENTS.md
 
-Orientation for Claude Code agents working in this repo.
+Orientation for coding agents working in this repo (Claude Code, Codex,
+or any other tool that reads `AGENTS.md`).
 
 ## What this is
 
@@ -57,7 +58,7 @@ them; if one feels wrong, open a discussion before coding.
 .
 ├── CHARTER.md        # product scope + decisions (source of truth)
 ├── PLAN.md           # PR-by-PR todo list
-├── CLAUDE.md         # this file — agent orientation
+├── AGENTS.md         # this file — agent orientation
 └── …                 # Xcode project + sources arrive in PR 1
 ```
 
@@ -70,5 +71,6 @@ shape changes meaningfully.
 - Charter ambiguity → ask Evan. Don't assume.
 - Plan ambiguity → check the open-questions section at the top of
   [`PLAN.md`](./PLAN.md#open-questions-for-evan); if not listed, ask.
-- Tooling / harness question → check
-  https://code.claude.com/docs/en/claude-code-on-the-web.
+- Tooling / harness question → consult the docs for the agent you're
+  running (e.g. Claude Code on the web, Codex). This repo deliberately
+  stays tool-agnostic.
