@@ -148,6 +148,8 @@ Do not implement these in any PR. From charter §9:
   - Repository wrapper for CRUD + active/closed queries.
   - Co-located `Tests/` cover CRUD, ordering, and closedAt
     transitions.
+  - After merge: upload an internal TestFlight smoke build to de-risk
+    signing, App Store Connect processing, and install-on-device flow.
   - **Acceptance:** repository tests pass; entity persists across app
     relaunch in a manual smoke test.
 
