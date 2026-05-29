@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: macos-26
+    timeout-minutes: 15
+    env:
+      PROJECT: SARLog.xcodeproj
+      SCHEME: SARLog
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData"
+
+      - name: Select simulator
+        id: simulator
+        run: |
+          set -euo pipefail
+          simulator_id="$(
+            xcrun simctl list devices available --json |
+            ruby -rjson -e 'devices = JSON.parse(STDIN.read).fetch("devices").values.flatten; phone = devices.find { |device| device["isAvailable"] && device["name"].include?("iPhone") }; abort "No available iPhone simulator" unless phone; puts phone.fetch("udid")'
+          )"
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Test
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}" \
+            -enableCodeCoverage YES \
+            -resultBundlePath "$RUNNER_TEMP/SARLogTests.xcresult" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData"
+
+      - name: Check coverage thresholds
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          xcrun xccov view --report --json "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.json
+          xcrun xccov view --report "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.txt
+          ruby ci/check_coverage.rb coverage/coverage.json
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage
+          retention-days: 14

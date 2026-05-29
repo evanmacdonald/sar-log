@@ -12,7 +12,7 @@ struct ContentView: View {
                 Text("SAR Log")
                     .font(.largeTitle.bold())
 
-                Text("Ready for task logging.")
+                Text(FieldConditionText.readinessMessage(hasActiveTask: false))
                     .font(.title3)
                     .foregroundStyle(.secondary)
             }
@@ -22,4 +22,3 @@ struct ContentView: View {
         }
     }
 }
-
