@@ -57,12 +57,14 @@ them; if one feels wrong, open a discussion before coding.
 
 ```
 .
+├── .github/workflows/ # GitHub Actions CI
+├── ci/                # CI helper scripts
 ├── CHARTER.md        # product scope + decisions (source of truth)
 ├── PLAN.md           # PR-by-PR todo list
 ├── AGENTS.md         # this file — agent orientation
 ├── README.md         # quick start + project links
 ├── SARLog.xcodeproj  # Xcode project
-└── SARLog/           # SwiftUI app source
+└── SARLog/           # SwiftUI app source + co-located Tests/
 ```
 
 Co-located `Tests/` folders should be added beside source folders as
