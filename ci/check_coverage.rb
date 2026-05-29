@@ -5,7 +5,6 @@ require "json"
 
 THRESHOLDS = {
   statements: 70.0,
-  branches: 65.0,
   functions: 70.0,
   lines: 70.0
 }.freeze
@@ -39,10 +38,6 @@ metrics = {
     percent: percent(covered_lines, executable_lines),
     detail: "#{covered_lines}/#{executable_lines} executable lines"
   },
-  branches: {
-    percent: 100.0,
-    detail: "0/0 measured branches; xccov does not expose Swift branch counters"
-  },
   functions: {
     percent: percent(covered_functions, functions.length),
     detail: "#{covered_functions}/#{functions.length} functions"
@@ -57,6 +52,8 @@ puts "Coverage summary:"
 metrics.each do |name, metric|
   puts "  #{name}: #{format('%.2f', metric[:percent])}% (#{metric[:detail]})"
 end
+puts "  branches: unavailable (xccov does not expose Swift branch counters)"
+warn "Branch coverage threshold is not enforced until Xcode exposes branch counters for Swift coverage reports."
 
 failures = metrics.each_with_object([]) do |(name, metric), failed_metrics|
   threshold = THRESHOLDS.fetch(name)
