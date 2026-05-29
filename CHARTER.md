@@ -196,5 +196,6 @@ SAR Log v1 is complete when:
 # GitHub repository
 
 - **Repo:** `sar-log`
-- **Branch model:** `main` is protected; all work via PRs.
+- **Branch model:** `main` is protected; feature work goes via PRs.
+  Plan/task-list bookkeeping changes may be pushed directly to `main`.
 - **Charter location:** `CHARTER.md` in repo root.

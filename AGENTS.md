@@ -50,7 +50,8 @@ them; if one feels wrong, open a discussion before coding.
 - **CI coverage thresholds:** 70% statements / 65% branches /
   70% functions / 70% lines. PRs that drop coverage below these fail
   CI.
-- **`main` is protected.** All work via PRs.
+- **`main` is protected.** Feature work goes via PRs; plan/task-list
+  bookkeeping changes may be pushed directly to `main`.
 
 ## Repo layout
 

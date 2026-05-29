@@ -23,8 +23,9 @@ one feature.
 
 ## Repo conventions
 
-- **Branch model:** `main` is protected. All work via PRs. One PR per item
-  in [PR list](#pr-list).
+- **Branch model:** `main` is protected. Feature work goes via PRs, one PR
+  per item in [PR list](#pr-list). Plan/task-list bookkeeping changes may be
+  pushed directly to `main`.
 - **Branch names:** `pr-<NN>-<kebab-slug>`, e.g. `pr-04-task-list`.
 - **Commit style:** imperative, scoped to the PR. Squash on merge.
 - **PR description template:** what the PR does, which PR number from this
@@ -116,7 +117,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Foundation
 
-- [ ] **PR 1 — Xcode project bootstrap**
+- [x] **PR 1 — Xcode project bootstrap**
   - SwiftUI app target `SARLog`, folder layout, `.gitignore`.
   - `README.md` linking to `CHARTER.md` and `PLAN.md`.
   - `AGENTS.md` already exists at repo root as the agent entry doc;
