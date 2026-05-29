@@ -128,7 +128,7 @@ Do not implement these in any PR. From charter §9:
     AGENTS.md layout section reflects the new structure; `git status`
     clean on a fresh clone.
 
-- [ ] **PR 2 — CI pipeline**
+- [x] **PR 2 — CI pipeline**
   - GitHub Actions workflow on push / PR to `main`.
   - Steps: `xcodebuild build` (Swift compiler errors fail the build —
     this is the typecheck step the charter calls out), `xcodebuild
