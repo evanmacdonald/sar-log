@@ -14,8 +14,6 @@ jobs:
     env:
       PROJECT: SARLog.xcodeproj
       SCHEME: SARLog
-      DERIVED_DATA_PATH: ${{ runner.temp }}/DerivedData
-      RESULT_BUNDLE_PATH: ${{ runner.temp }}/SARLogTests.xcresult
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +28,7 @@ jobs:
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$DERIVED_DATA_PATH"
+            -derivedDataPath "$RUNNER_TEMP/DerivedData"
 
       - name: Select simulator
         id: simulator
@@ -50,15 +48,15 @@ jobs:
             -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}" \
             -enableCodeCoverage YES \
-            -resultBundlePath "$RESULT_BUNDLE_PATH" \
-            -derivedDataPath "$DERIVED_DATA_PATH"
+            -resultBundlePath "$RUNNER_TEMP/SARLogTests.xcresult" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData"
 
       - name: Check coverage thresholds
         run: |
           set -euo pipefail
           mkdir -p coverage
-          xcrun xccov view --report --json "$RESULT_BUNDLE_PATH" > coverage/coverage.json
-          xcrun xccov view --report "$RESULT_BUNDLE_PATH" > coverage/coverage.txt
+          xcrun xccov view --report --json "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.json
+          xcrun xccov view --report "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.txt
           ruby ci/check_coverage.rb coverage/coverage.json
 
       - name: Upload coverage artifact
