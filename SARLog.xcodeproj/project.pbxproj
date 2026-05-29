@@ -11,6 +11,10 @@
 		1A2B3C4D5E6F700100000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000102 /* ContentView.swift */; };
 		1A2B3C4D5E6F700100000003 /* SARLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000105 /* SARLogTests.swift */; };
 		1A2B3C4D5E6F700100000004 /* FieldConditionText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000107 /* FieldConditionText.swift */; };
+		1A2B3C4D5E6F700100000005 /* SARTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000108 /* SARTask.swift */; };
+		1A2B3C4D5E6F700100000006 /* SARLogModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */; };
+		1A2B3C4D5E6F700100000007 /* TaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000110 /* TaskRepository.swift */; };
+		1A2B3C4D5E6F700100000008 /* TaskRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,6 +34,10 @@
 		1A2B3C4D5E6F700100000105 /* SARLogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000106 /* SARLogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SARLogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A2B3C4D5E6F700100000107 /* FieldConditionText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldConditionText.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000108 /* SARTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARTask.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogModelContainer.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000110 /* TaskRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRepository.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +71,7 @@
 			children = (
 				1A2B3C4D5E6F700100000101 /* SARLogApp.swift */,
 				1A2B3C4D5E6F700100000102 /* ContentView.swift */,
+				1A2B3C4D5E6F700100000306 /* Persistence */,
 				1A2B3C4D5E6F700100000305 /* Support */,
 				1A2B3C4D5E6F700100000304 /* Tests */,
 			);
@@ -92,6 +101,25 @@
 				1A2B3C4D5E6F700100000107 /* FieldConditionText.swift */,
 			);
 			path = Support;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700100000306 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000108 /* SARTask.swift */,
+				1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */,
+				1A2B3C4D5E6F700100000110 /* TaskRepository.swift */,
+				1A2B3C4D5E6F700100000307 /* Tests */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700100000307 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -195,6 +223,9 @@
 				1A2B3C4D5E6F700100000001 /* SARLogApp.swift in Sources */,
 				1A2B3C4D5E6F700100000002 /* ContentView.swift in Sources */,
 				1A2B3C4D5E6F700100000004 /* FieldConditionText.swift in Sources */,
+				1A2B3C4D5E6F700100000005 /* SARTask.swift in Sources */,
+				1A2B3C4D5E6F700100000006 /* SARLogModelContainer.swift in Sources */,
+				1A2B3C4D5E6F700100000007 /* TaskRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,6 +234,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A2B3C4D5E6F700100000003 /* SARLogTests.swift in Sources */,
+				1A2B3C4D5E6F700100000008 /* TaskRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
