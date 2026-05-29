@@ -3,26 +3,11 @@ import SwiftData
 import XCTest
 @testable import SARLog
 
-@MainActor
 final class TaskRepositoryTests: XCTestCase {
-    private var container: ModelContainer!
-    private var repository: TaskRepository!
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        container = try SARLogModelContainer.inMemory()
-        repository = TaskRepository(context: container.mainContext)
-    }
-
-    override func tearDownWithError() throws {
-        repository = nil
-        container = nil
-
-        try super.tearDownWithError()
-    }
-
+    @MainActor
     func testCreateAndFetchTask() throws {
+        let store = try makeRepository()
+        let repository = store.repository
         let id = UUID()
         let createdAt = Date(timeIntervalSince1970: 1_800)
 
@@ -46,7 +31,10 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertNil(fetched.closedAt)
     }
 
+    @MainActor
     func testUpdateAndDeleteTask() throws {
+        let store = try makeRepository()
+        let repository = store.repository
         let task = try repository.createTask(subjectName: "Original")
 
         try repository.update(
@@ -69,7 +57,10 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertNil(try repository.task(id: task.id))
     }
 
+    @MainActor
     func testActiveAndClosedQueriesRespectClosedAtTransitions() throws {
+        let store = try makeRepository()
+        let repository = store.repository
         let task = try repository.createTask(subjectName: "Active")
 
         XCTAssertEqual(try repository.activeTasks().map(\.id), [task.id])
@@ -89,7 +80,10 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertTrue(try repository.closedTasks().isEmpty)
     }
 
+    @MainActor
     func testTaskQueriesReturnNewestCreatedFirst() throws {
+        let store = try makeRepository()
+        let repository = store.repository
         let oldest = try repository.createTask(
             subjectName: "Oldest",
             createdAt: Date(timeIntervalSince1970: 100)
@@ -109,6 +103,7 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.closedTasks().map(\.id), [middleClosed.id])
     }
 
+    @MainActor
     func testPersistentStoreSurvivesContainerRecreation() throws {
         let storeDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("SARLog-\(UUID().uuidString)", isDirectory: true)
@@ -139,4 +134,18 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertEqual(fetched.taskNumber, "Persisted")
         XCTAssertEqual(fetched.subjectName, "Subject")
     }
+
+    @MainActor
+    private func makeRepository() throws -> RepositoryStore {
+        let container = try SARLogModelContainer.inMemory()
+        return RepositoryStore(
+            container: container,
+            repository: TaskRepository(context: container.mainContext)
+        )
+    }
+}
+
+private struct RepositoryStore {
+    let container: ModelContainer
+    let repository: TaskRepository
 }
