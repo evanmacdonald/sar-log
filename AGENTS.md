@@ -59,11 +59,13 @@ them; if one feels wrong, open a discussion before coding.
 ├── CHARTER.md        # product scope + decisions (source of truth)
 ├── PLAN.md           # PR-by-PR todo list
 ├── AGENTS.md         # this file — agent orientation
-└── …                 # Xcode project + sources arrive in PR 1
+├── README.md         # quick start + project links
+├── SARLog.xcodeproj  # Xcode project
+└── SARLog/           # SwiftUI app source
 ```
 
-The Xcode project, source folders, and co-located `Tests/` folders
-land in PR 1 and subsequent PRs. Update this layout section when the
+Co-located `Tests/` folders should be added beside source folders as
+logic lands in subsequent PRs. Update this layout section when the
 shape changes meaningfully.
 
 ## When in doubt
