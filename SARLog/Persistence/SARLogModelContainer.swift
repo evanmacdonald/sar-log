@@ -10,7 +10,8 @@ enum SARLogModelContainer {
 
     @MainActor
     static func live() throws -> ModelContainer {
-        try ModelContainer(for: schema)
+        let configuration = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+        return try ModelContainer(for: schema, configurations: [configuration])
     }
 
     @MainActor
@@ -21,7 +22,7 @@ enum SARLogModelContainer {
 
     @MainActor
     static func persistent(at url: URL) throws -> ModelContainer {
-        let configuration = ModelConfiguration(schema: schema, url: url)
+        let configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, configurations: [configuration])
     }
 }
