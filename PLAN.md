@@ -116,7 +116,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Foundation
 
-- [ ] **PR 1 — Xcode project bootstrap**
+- [x] **PR 1 — Xcode project bootstrap**
   - SwiftUI app target `SARLog`, folder layout, `.gitignore`.
   - `README.md` linking to `CHARTER.md` and `PLAN.md`.
   - `AGENTS.md` already exists at repo root as the agent entry doc;
