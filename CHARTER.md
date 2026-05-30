@@ -152,7 +152,14 @@ No XCUITest (UI / E2E). Those rely on the manual Xcode run / TestFlight flow, sa
 
 ## Coverage thresholds (CI-enforced)
 
-Mirrors Pocket Doctor: **70% statements / 65% branches / 70% functions / 70% lines.**
+Mirrors Pocket Doctor where the Swift/Xcode toolchain exposes the metric:
+**70% statements / 65% branches / 70% functions / 70% lines.**
+
+Swift coverage reports currently expose statement/line/function coverage for
+this app, but not real branch counters. CI must fail branch coverage when real
+branch counters are present and below 65%; when the toolchain reports zero
+branch counters, CI reports branch coverage as unavailable instead of
+substituting region coverage.
 
 ## CI (GitHub Actions)
 

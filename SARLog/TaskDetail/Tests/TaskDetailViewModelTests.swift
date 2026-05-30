@@ -63,6 +63,7 @@ final class TaskDetailViewModelTests: XCTestCase {
                 "Returning to base"
             ]
         )
+        XCTAssertEqual(model.predefinedTimelineEvents.map(\.id), model.predefinedTimelineEvents.map(\.label))
     }
 
     @MainActor
@@ -108,7 +109,7 @@ final class TaskDetailViewModelTests: XCTestCase {
         let repository = TaskRepository(context: container.mainContext)
         let task = try repository.createTask()
         let model = TaskDetailViewModel(task: task, repository: repository)
-        let event = try XCTUnwrap(model.addCustomTimelineEvent(at: Date(timeIntervalSince1970: 100)))
+        let event = try XCTUnwrap(model.addCustomTimelineEvent(label: "Draft", at: Date(timeIntervalSince1970: 100)))
 
         model.updateTimelineEvent(event, label: "Subject located")
 
@@ -148,22 +149,53 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
-    func testDiscardIfEmptyRemovesUnlabeledDraftButKeepsLabeledEvents() throws {
+    func testAddCustomTimelineEventIgnoresBlankLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
         let task = try repository.createTask()
         let model = TaskDetailViewModel(task: task, repository: repository)
 
-        let blankDraft = try XCTUnwrap(model.addCustomTimelineEvent())
-        model.discardIfEmpty(blankDraft)
+        XCTAssertNil(model.addCustomTimelineEvent())
         XCTAssertTrue(model.timelineEvents.isEmpty)
 
-        let whitespaceDraft = try XCTUnwrap(model.addCustomTimelineEvent(label: "   "))
-        model.discardIfEmpty(whitespaceDraft)
+        XCTAssertNil(model.addCustomTimelineEvent(label: "   "))
         XCTAssertTrue(model.timelineEvents.isEmpty)
 
         let labeled = try XCTUnwrap(model.addCustomTimelineEvent(label: "Real event"))
-        model.discardIfEmpty(labeled)
         XCTAssertEqual(model.timelineEvents.map(\.id), [labeled.id])
+    }
+
+    @MainActor
+    func testCloseAndReopenTaskPersistImmediately() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let closedAt = Date(timeIntervalSince1970: 900)
+
+        model.closeTask(at: closedAt)
+
+        XCTAssertEqual(try repository.task(id: task.id)?.closedAt, closedAt)
+        XCTAssertNil(model.errorMessage)
+
+        model.reopenTask()
+
+        XCTAssertNil(try repository.task(id: task.id)?.closedAt)
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testDeleteTaskRemovesTaskAndTimelineEvents() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        try repository.createTimelineEvent(for: task, label: "Callout from ECC")
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        XCTAssertTrue(model.deleteTask())
+
+        XCTAssertNil(try repository.task(id: task.id))
+        XCTAssertTrue(try repository.timelineEvents(taskId: task.id).isEmpty)
+        XCTAssertNil(model.errorMessage)
     }
 }

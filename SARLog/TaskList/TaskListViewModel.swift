@@ -9,6 +9,7 @@ final class TaskListViewModel {
 
     private(set) var activeTasks: [SARTask] = []
     private(set) var closedTasks: [SARTask] = []
+    var errorMessage: String?
 
     init(repository: TaskRepository) {
         self.repository = repository
@@ -24,29 +25,53 @@ final class TaskListViewModel {
     }
 
     func refresh() {
-        activeTasks = (try? repository.activeTasks()) ?? []
-        closedTasks = (try? repository.closedTasks()) ?? []
+        do {
+            activeTasks = try repository.activeTasks()
+            closedTasks = try repository.closedTasks()
+            errorMessage = nil
+        } catch {
+            activeTasks = []
+            closedTasks = []
+            errorMessage = "Task list could not be loaded."
+        }
     }
 
     @discardableResult
     func createTask() -> SARTask? {
-        let task = try? repository.createTask()
-        refresh()
-        return task
+        performMutation {
+            try repository.createTask()
+        }
     }
 
     func close(_ task: SARTask) {
-        try? repository.close(task)
-        refresh()
+        performMutation {
+            try repository.close(task)
+        }
     }
 
     func reopen(_ task: SARTask) {
-        try? repository.reopen(task)
-        refresh()
+        performMutation {
+            try repository.reopen(task)
+        }
     }
 
     func delete(_ task: SARTask) {
-        try? repository.delete(task)
-        refresh()
+        performMutation {
+            try repository.delete(task)
+        }
+    }
+
+    @discardableResult
+    private func performMutation<Result>(_ operation: () throws -> Result) -> Result? {
+        do {
+            let result = try operation()
+            refresh()
+            errorMessage = nil
+            return result
+        } catch {
+            refresh()
+            errorMessage = "Change could not be saved. Try again before leaving this screen."
+            return nil
+        }
     }
 }

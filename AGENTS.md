@@ -48,8 +48,10 @@ them; if one feels wrong, open a discussion before coding.
 - **No UI tests in v1.** XCTest covers logic only. Extract logic from
   views into testable types when needed.
 - **CI coverage thresholds:** 70% statements / 65% branches /
-  70% functions / 70% lines. PRs that drop coverage below these fail
-  CI.
+  70% functions / 70% lines for metrics exposed by the Swift/Xcode
+  coverage toolchain. Branch coverage must not be approximated with region
+  coverage; if real branch counters are unavailable, CI reports that metric
+  as unavailable.
 - **`main` is protected.** Feature work goes via PRs; plan/task-list
   bookkeeping changes may be pushed directly to `main`.
 
