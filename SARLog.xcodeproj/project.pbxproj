@@ -15,6 +15,13 @@
 		1A2B3C4D5E6F700100000006 /* SARLogModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */; };
 		1A2B3C4D5E6F700100000007 /* TaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000110 /* TaskRepository.swift */; };
 		1A2B3C4D5E6F700100000008 /* TaskRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */; };
+		1A2B3C4D5E6F700100000009 /* TaskListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000112 /* TaskListViewModel.swift */; };
+		1A2B3C4D5E6F70010000000A /* TaskRowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000113 /* TaskRowPresentation.swift */; };
+		1A2B3C4D5E6F70010000000B /* TaskListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000114 /* TaskListView.swift */; };
+		1A2B3C4D5E6F70010000000C /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000115 /* TaskDetailView.swift */; };
+		1A2B3C4D5E6F70010000000D /* TaskListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000116 /* TaskListViewModelTests.swift */; };
+		1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000117 /* TaskRowPresentationTests.swift */; };
+		1A2B3C4D5E6F70010000000F /* TaskListViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000118 /* TaskListViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +45,13 @@
 		1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogModelContainer.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000110 /* TaskRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRepository.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRepositoryTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000112 /* TaskListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000113 /* TaskRowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowPresentation.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000114 /* TaskListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000115 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000116 /* TaskListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewModelTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000117 /* TaskRowPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowPresentationTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000118 /* TaskListViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +85,8 @@
 			children = (
 				1A2B3C4D5E6F700100000101 /* SARLogApp.swift */,
 				1A2B3C4D5E6F700100000102 /* ContentView.swift */,
+				1A2B3C4D5E6F700100000308 /* TaskList */,
+				1A2B3C4D5E6F70010000030A /* TaskDetail */,
 				1A2B3C4D5E6F700100000306 /* Persistence */,
 				1A2B3C4D5E6F700100000305 /* Support */,
 				1A2B3C4D5E6F700100000304 /* Tests */,
@@ -120,6 +136,35 @@
 				1A2B3C4D5E6F700100000111 /* TaskRepositoryTests.swift */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700100000308 /* TaskList */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000114 /* TaskListView.swift */,
+				1A2B3C4D5E6F700100000112 /* TaskListViewModel.swift */,
+				1A2B3C4D5E6F700100000113 /* TaskRowPresentation.swift */,
+				1A2B3C4D5E6F700100000309 /* Tests */,
+			);
+			path = TaskList;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F700100000309 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000116 /* TaskListViewModelTests.swift */,
+				1A2B3C4D5E6F700100000117 /* TaskRowPresentationTests.swift */,
+				1A2B3C4D5E6F700100000118 /* TaskListViewTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F70010000030A /* TaskDetail */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000115 /* TaskDetailView.swift */,
+			);
+			path = TaskDetail;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -226,6 +271,10 @@
 				1A2B3C4D5E6F700100000005 /* SARTask.swift in Sources */,
 				1A2B3C4D5E6F700100000006 /* SARLogModelContainer.swift in Sources */,
 				1A2B3C4D5E6F700100000007 /* TaskRepository.swift in Sources */,
+				1A2B3C4D5E6F700100000009 /* TaskListViewModel.swift in Sources */,
+				1A2B3C4D5E6F70010000000A /* TaskRowPresentation.swift in Sources */,
+				1A2B3C4D5E6F70010000000B /* TaskListView.swift in Sources */,
+				1A2B3C4D5E6F70010000000C /* TaskDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +284,9 @@
 			files = (
 				1A2B3C4D5E6F700100000003 /* SARLogTests.swift in Sources */,
 				1A2B3C4D5E6F700100000008 /* TaskRepositoryTests.swift in Sources */,
+				1A2B3C4D5E6F70010000000D /* TaskListViewModelTests.swift in Sources */,
+				1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */,
+				1A2B3C4D5E6F70010000000F /* TaskListViewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +424,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = L4YMQK6643;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "SAR Log";
@@ -400,6 +453,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = L4YMQK6643;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "SAR Log";

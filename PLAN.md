@@ -141,7 +141,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** CI green on the PR; CI red on a deliberately
     failing test (verified once and reverted).
 
-- [ ] **PR 3 — Persistence layer (SwiftData) + Task entity**
+- [x] **PR 3 — Persistence layer (SwiftData) + Task entity**
   - SwiftData container wired into the app.
   - `Task` entity: id, taskNumber (free text), subjectName, location,
     scribeName, notes, createdAt, closedAt (nullable).
