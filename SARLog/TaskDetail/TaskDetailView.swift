@@ -24,6 +24,10 @@ struct TaskDetailView: View {
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
     @Environment(\.openURL) private var openURL
+    private let eventButtonColumns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
+    ]
 
     var body: some View {
         List {
@@ -59,6 +63,33 @@ struct TaskDetailContent: View {
         .navigationTitle(TaskRowPresentation.title(taskNumber: model.task.taskNumber, subjectName: model.task.subjectName))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
+            bottomActionPanel
+        }
+    }
+
+    private var bottomActionPanel: some View {
+        VStack(spacing: 12) {
+            LazyVGrid(columns: eventButtonColumns, spacing: 10) {
+                ForEach(model.predefinedTimelineEvents) { event in
+                    Button {
+                        model.addPredefinedTimelineEvent(event)
+                    } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: event.systemImage)
+                                .font(.title3)
+                            Text(event.label)
+                                .font(.callout.weight(.semibold))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.85)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel(event.label)
+                }
+            }
+
             if let mapsURL = model.mapsURL {
                 Button {
                     openURL(mapsURL)
@@ -68,10 +99,10 @@ struct TaskDetailContent: View {
                         .frame(maxWidth: .infinity, minHeight: 56)
                 }
                 .buttonStyle(.borderedProminent)
-                .padding()
-                .background(.bar)
             }
         }
+        .padding()
+        .background(.bar)
     }
 
     private var taskNumber: Binding<String> {

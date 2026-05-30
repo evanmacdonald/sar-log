@@ -23,8 +23,22 @@ final class TaskDetailViewModel {
         CoordinateLocationParser.appleMapsURL(for: task.location)
     }
 
+    var predefinedTimelineEvents: [PredefinedTimelineEvent] {
+        PredefinedTimelineEvent.all
+    }
+
     func refreshTimeline() {
         timelineEvents = (try? repository.timelineEvents(for: task)) ?? []
+    }
+
+    func addPredefinedTimelineEvent(_ event: PredefinedTimelineEvent, at timestamp: Date = .now) {
+        _ = try? repository.createTimelineEvent(
+            for: task,
+            label: event.label,
+            timestamp: timestamp,
+            isCustom: false
+        )
+        refreshTimeline()
     }
 
     func updateTaskNumber(_ value: String) {

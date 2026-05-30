@@ -36,4 +36,14 @@ final class TaskDetailViewTests: XCTestCase {
 
         _ = TaskDetailContent(model: model).body
     }
+
+    @MainActor
+    func testContentBuildsPredefinedEventActions() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        _ = TaskDetailContent(model: model).body
+    }
 }
