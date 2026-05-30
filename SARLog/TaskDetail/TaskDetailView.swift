@@ -99,9 +99,15 @@ struct TaskDetailContent: View {
     }
 
     private func detailTextField(_ title: String, text: Binding<String>) -> some View {
-        TextField(title, text: text)
-            .frame(minHeight: 52)
-            .textInputAutocapitalization(.words)
-            .accessibilityLabel(title)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            TextField(title, text: text)
+                .font(.body)
+                .textInputAutocapitalization(.words)
+                .accessibilityLabel(title)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
     }
 }
