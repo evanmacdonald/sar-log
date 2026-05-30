@@ -46,6 +46,25 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testVitalsEntriesLoadOldestFirst() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let latest = try repository.createVitalsEntry(
+            for: task,
+            timestamp: Date(timeIntervalSince1970: 300)
+        )
+        let earliest = try repository.createVitalsEntry(
+            for: task,
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        XCTAssertEqual(model.vitalsEntries.map(\.id), [earliest.id, latest.id])
+    }
+
+    @MainActor
     func testPredefinedTimelineEventsMatchCharterLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
@@ -149,6 +168,41 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testAddVitalsEntryPersistsImmediatelyAndRefreshesList() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let timestamp = Date(timeIntervalSince1970: 800)
+
+        let entry = try XCTUnwrap(model.addVitalsEntry(at: timestamp))
+
+        XCTAssertEqual(entry.taskId, task.id)
+        XCTAssertEqual(entry.timestamp, timestamp)
+        XCTAssertNil(entry.heartRate)
+        XCTAssertEqual(model.vitalsEntries.map(\.id), [entry.id])
+        XCTAssertEqual(try repository.vitalsEntries(for: task).map(\.id), [entry.id])
+    }
+
+    @MainActor
+    func testUpdateVitalsEntryPersistsImmediately() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let entry = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        let updatedTimestamp = Date(timeIntervalSince1970: 50)
+
+        model.updateVitalsEntryTimestamp(entry, timestamp: updatedTimestamp)
+        model.updateVitalsEntryHeartRate(entry, heartRate: 72)
+
+        XCTAssertEqual(model.vitalsEntries.first?.timestamp, updatedTimestamp)
+        XCTAssertEqual(model.vitalsEntries.first?.heartRate, 72)
+        XCTAssertEqual(try repository.vitalsEntries(for: task).first?.timestamp, updatedTimestamp)
+        XCTAssertEqual(try repository.vitalsEntries(for: task).first?.heartRate, 72)
+    }
+
+    @MainActor
     func testAddCustomTimelineEventIgnoresBlankLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
@@ -190,12 +244,14 @@ final class TaskDetailViewModelTests: XCTestCase {
         let repository = TaskRepository(context: container.mainContext)
         let task = try repository.createTask()
         try repository.createTimelineEvent(for: task, label: "Callout from ECC")
+        try repository.createVitalsEntry(for: task)
         let model = TaskDetailViewModel(task: task, repository: repository)
 
         XCTAssertTrue(model.deleteTask())
 
         XCTAssertNil(try repository.task(id: task.id))
         XCTAssertTrue(try repository.timelineEvents(taskId: task.id).isEmpty)
+        XCTAssertTrue(try repository.vitalsEntries(taskId: task.id).isEmpty)
         XCTAssertNil(model.errorMessage)
     }
 }

@@ -8,12 +8,13 @@ final class TaskDetailViewModel {
     private let repository: TaskRepository
     let task: SARTask
     var timelineEvents: [TimelineEvent] = []
+    var vitalsEntries: [VitalsEntry] = []
     var errorMessage: String?
 
     init(task: SARTask, repository: TaskRepository) {
         self.task = task
         self.repository = repository
-        refreshTimeline()
+        refreshLogEntries()
     }
 
     convenience init(task: SARTask, context: ModelContext) {
@@ -25,12 +26,18 @@ final class TaskDetailViewModel {
     }
 
     func refreshTimeline() {
+        refreshLogEntries()
+    }
+
+    func refreshLogEntries() {
         do {
             timelineEvents = try repository.timelineEvents(for: task)
+            vitalsEntries = try repository.vitalsEntries(for: task)
             errorMessage = nil
         } catch {
             timelineEvents = []
-            errorMessage = "Timeline could not be loaded."
+            vitalsEntries = []
+            errorMessage = "Log entries could not be loaded."
         }
     }
 
@@ -70,6 +77,25 @@ final class TaskDetailViewModel {
     func deleteTimelineEvent(_ event: TimelineEvent) {
         performMutation {
             try repository.deleteTimelineEvent(event)
+        }
+    }
+
+    @discardableResult
+    func addVitalsEntry(at timestamp: Date = .now) -> VitalsEntry? {
+        performMutation {
+            try repository.createVitalsEntry(for: task, timestamp: timestamp)
+        }
+    }
+
+    func updateVitalsEntryTimestamp(_ entry: VitalsEntry, timestamp: Date) {
+        performMutation {
+            try repository.updateVitalsEntryTimestamp(entry, timestamp: timestamp)
+        }
+    }
+
+    func updateVitalsEntryHeartRate(_ entry: VitalsEntry, heartRate: Int?) {
+        performMutation {
+            try repository.updateVitalsEntryHeartRate(entry, heartRate: heartRate)
         }
     }
 
@@ -131,11 +157,11 @@ final class TaskDetailViewModel {
     private func performMutation<Result>(_ operation: () throws -> Result) -> Result? {
         do {
             let result = try operation()
-            refreshTimeline()
+            refreshLogEntries()
             errorMessage = nil
             return result
         } catch {
-            refreshTimeline()
+            refreshLogEntries()
             errorMessage = "Change could not be saved. Try again before leaving this screen."
             return nil
         }

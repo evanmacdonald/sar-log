@@ -37,6 +37,7 @@ final class TaskRepositoryTests: XCTestCase {
         let repository = store.repository
         let task = try repository.createTask(subjectName: "Original")
         try repository.createTimelineEvent(for: task, label: "Callout from ECC")
+        try repository.createVitalsEntry(for: task)
 
         try repository.update(
             task,
@@ -57,6 +58,7 @@ final class TaskRepositoryTests: XCTestCase {
         try repository.delete(updated)
         XCTAssertNil(try repository.task(id: task.id))
         XCTAssertTrue(try repository.timelineEvents(taskId: task.id).isEmpty)
+        XCTAssertTrue(try repository.vitalsEntries(taskId: task.id).isEmpty)
     }
 
     @MainActor
@@ -262,6 +264,85 @@ final class TaskRepositoryTests: XCTestCase {
         try repository.deleteTimelineEvent(removed)
 
         XCTAssertEqual(try repository.timelineEvents(for: task).map(\.id), [kept.id])
+    }
+
+    @MainActor
+    func testCreateVitalsEntryStartsWithNullableClinicalFields() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let timestamp = Date(timeIntervalSince1970: 600)
+
+        let entry = try repository.createVitalsEntry(for: task, timestamp: timestamp)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first)
+        XCTAssertEqual(fetched.id, entry.id)
+        XCTAssertEqual(fetched.taskId, task.id)
+        XCTAssertEqual(fetched.timestamp, timestamp)
+        XCTAssertNil(fetched.heartRate)
+        XCTAssertNil(fetched.systolicBloodPressure)
+        XCTAssertNil(fetched.diastolicBloodPressure)
+        XCTAssertNil(fetched.oxygenSaturation)
+        XCTAssertNil(fetched.respiratoryRate)
+        XCTAssertNil(fetched.temperature)
+        XCTAssertNil(fetched.gcsEye)
+        XCTAssertNil(fetched.gcsVerbal)
+        XCTAssertNil(fetched.gcsMotor)
+        XCTAssertNil(fetched.leftPupilSize)
+        XCTAssertNil(fetched.leftPupilReactivity)
+        XCTAssertNil(fetched.rightPupilSize)
+        XCTAssertNil(fetched.rightPupilReactivity)
+        XCTAssertNil(fetched.painScore)
+        XCTAssertNil(fetched.capillaryRefill)
+        XCTAssertNil(fetched.skinColour)
+        XCTAssertNil(fetched.skinTemperature)
+        XCTAssertNil(fetched.skinMoisture)
+        XCTAssertNil(fetched.levelOfConsciousness)
+    }
+
+    @MainActor
+    func testVitalsEntriesFilterByTaskAndSortOldestFirst() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let firstTask = try repository.createTask(subjectName: "First")
+        let secondTask = try repository.createTask(subjectName: "Second")
+
+        let later = try repository.createVitalsEntry(
+            for: firstTask,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000002")),
+            timestamp: Date(timeIntervalSince1970: 300)
+        )
+        try repository.createVitalsEntry(
+            for: secondTask,
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+        let earliest = try repository.createVitalsEntry(
+            for: firstTask,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000001")),
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+
+        XCTAssertEqual(try repository.vitalsEntries(for: firstTask).map(\.id), [earliest.id, later.id])
+    }
+
+    @MainActor
+    func testUpdateVitalsTimestampAndHeartRatePersistImmediately() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let entry = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 100))
+        let updatedTimestamp = Date(timeIntervalSince1970: 200)
+
+        try repository.updateVitalsEntryTimestamp(entry, timestamp: updatedTimestamp)
+        try repository.updateVitalsEntryHeartRate(entry, heartRate: 88)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first)
+        XCTAssertEqual(fetched.timestamp, updatedTimestamp)
+        XCTAssertEqual(fetched.heartRate, 88)
+
+        try repository.updateVitalsEntryHeartRate(entry, heartRate: nil)
+
+        XCTAssertNil(try repository.vitalsEntries(for: task).first?.heartRate)
     }
 
     @MainActor

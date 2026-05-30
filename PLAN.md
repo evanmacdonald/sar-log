@@ -212,7 +212,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Vitals
 
-- [ ] **PR 9 — Vitals data model + entry screen scaffold**
+- [x] **PR 9 — Vitals data model + entry screen scaffold**
   - `VitalsEntry` entity: id, taskId, timestamp, all clinical fields
     nullable (filled by PR 10).
   - Entry screen reachable from task detail.
