@@ -3,20 +3,10 @@ import XCTest
 
 final class TaskDetailViewTests: XCTestCase {
     @MainActor
-    func testContentBuildsEditableFieldsWithoutMapsAction() throws {
+    func testContentBuildsEditableFields() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
-        let task = try repository.createTask(location: "Trailhead")
-        let model = TaskDetailViewModel(task: task, repository: repository)
-
-        _ = TaskDetailContent(model: model).body
-    }
-
-    @MainActor
-    func testContentBuildsMapsActionForCoordinateLocation() throws {
-        let container = try SARLogModelContainer.inMemory()
-        let repository = TaskRepository(context: container.mainContext)
-        let task = try repository.createTask(location: "49.123, -123.456")
+        let task = try repository.createTask(location: "Eagle Ridge, Coquitlam")
         let model = TaskDetailViewModel(task: task, repository: repository)
 
         _ = TaskDetailContent(model: model).body

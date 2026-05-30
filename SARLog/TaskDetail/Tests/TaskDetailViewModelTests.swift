@@ -25,20 +25,6 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
-    func testMapsURLReflectsCurrentLocation() throws {
-        let container = try SARLogModelContainer.inMemory()
-        let repository = TaskRepository(context: container.mainContext)
-        let task = try repository.createTask(location: "Staging")
-        let model = TaskDetailViewModel(task: task, repository: repository)
-
-        XCTAssertNil(model.mapsURL)
-
-        model.updateLocation("49.123, -123.456")
-
-        XCTAssertEqual(model.mapsURL?.host, "maps.apple.com")
-    }
-
-    @MainActor
     func testTimelineEventsLoadOldestFirst() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)

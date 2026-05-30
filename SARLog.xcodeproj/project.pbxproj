@@ -22,9 +22,7 @@
 		1A2B3C4D5E6F70010000000D /* TaskListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000116 /* TaskListViewModelTests.swift */; };
 		1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000117 /* TaskRowPresentationTests.swift */; };
 		1A2B3C4D5E6F70010000000F /* TaskListViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000118 /* TaskListViewTests.swift */; };
-		1A2B3C4D5E6F700100000010 /* CoordinateLocationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000119 /* CoordinateLocationParser.swift */; };
 		1A2B3C4D5E6F700100000011 /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011A /* TaskDetailViewModel.swift */; };
-		1A2B3C4D5E6F700100000012 /* CoordinateLocationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011B /* CoordinateLocationParserTests.swift */; };
 		1A2B3C4D5E6F700100000013 /* TaskDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */; };
 		1A2B3C4D5E6F700100000014 /* TaskDetailViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011D /* TaskDetailViewTests.swift */; };
 		1A2B3C4D5E6F700100000015 /* TimelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */; };
@@ -59,9 +57,7 @@
 		1A2B3C4D5E6F700100000116 /* TaskListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewModelTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000117 /* TaskRowPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowPresentationTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000118 /* TaskListViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewTests.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F700100000119 /* CoordinateLocationParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateLocationParser.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011A /* TaskDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModel.swift; sourceTree = "<group>"; };
-		1A2B3C4D5E6F70010000011B /* CoordinateLocationParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateLocationParserTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModelTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011D /* TaskDetailViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEvent.swift; sourceTree = "<group>"; };
@@ -180,7 +176,6 @@
 				1A2B3C4D5E6F700100000115 /* TaskDetailView.swift */,
 				1A2B3C4D5E6F70010000011A /* TaskDetailViewModel.swift */,
 				1A2B3C4D5E6F70010000011F /* PredefinedTimelineEvent.swift */,
-				1A2B3C4D5E6F700100000119 /* CoordinateLocationParser.swift */,
 				1A2B3C4D5E6F70010000030B /* Tests */,
 			);
 			path = TaskDetail;
@@ -189,7 +184,6 @@
 		1A2B3C4D5E6F70010000030B /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				1A2B3C4D5E6F70010000011B /* CoordinateLocationParserTests.swift */,
 				1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */,
 				1A2B3C4D5E6F70010000011D /* TaskDetailViewTests.swift */,
 			);
@@ -305,7 +299,6 @@
 				1A2B3C4D5E6F70010000000A /* TaskRowPresentation.swift in Sources */,
 				1A2B3C4D5E6F70010000000B /* TaskListView.swift in Sources */,
 				1A2B3C4D5E6F70010000000C /* TaskDetailView.swift in Sources */,
-				1A2B3C4D5E6F700100000010 /* CoordinateLocationParser.swift in Sources */,
 				1A2B3C4D5E6F700100000011 /* TaskDetailViewModel.swift in Sources */,
 				1A2B3C4D5E6F700100000016 /* PredefinedTimelineEvent.swift in Sources */,
 			);
@@ -320,7 +313,6 @@
 				1A2B3C4D5E6F70010000000D /* TaskListViewModelTests.swift in Sources */,
 				1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */,
 				1A2B3C4D5E6F70010000000F /* TaskListViewTests.swift in Sources */,
-				1A2B3C4D5E6F700100000012 /* CoordinateLocationParserTests.swift in Sources */,
 				1A2B3C4D5E6F700100000013 /* TaskDetailViewModelTests.swift in Sources */,
 				1A2B3C4D5E6F700100000014 /* TaskDetailViewTests.swift in Sources */,
 			);
