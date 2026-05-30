@@ -201,6 +201,70 @@ final class TaskRepositoryTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdateTimelineEventChangesLabelAndTimestamp() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let event = try repository.createTimelineEvent(
+            for: task,
+            label: "On scene",
+            timestamp: Date(timeIntervalSince1970: 100),
+            isCustom: true
+        )
+
+        try repository.updateTimelineEvent(
+            event,
+            label: "Subject located",
+            timestamp: Date(timeIntervalSince1970: 50)
+        )
+
+        let fetched = try XCTUnwrap(repository.timelineEvents(for: task).first)
+        XCTAssertEqual(fetched.id, event.id)
+        XCTAssertEqual(fetched.label, "Subject located")
+        XCTAssertEqual(fetched.timestamp, Date(timeIntervalSince1970: 50))
+        XCTAssertTrue(fetched.isCustom)
+    }
+
+    @MainActor
+    func testUpdateTimelineEventLeavesUnspecifiedFieldsUnchanged() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let timestamp = Date(timeIntervalSince1970: 100)
+        let event = try repository.createTimelineEvent(
+            for: task,
+            label: "On scene",
+            timestamp: timestamp
+        )
+
+        try repository.updateTimelineEvent(event, label: "Renamed")
+
+        XCTAssertEqual(event.label, "Renamed")
+        XCTAssertEqual(event.timestamp, timestamp)
+    }
+
+    @MainActor
+    func testDeleteTimelineEventRemovesOnlyThatEvent() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let kept = try repository.createTimelineEvent(
+            for: task,
+            label: "Callout from ECC",
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+        let removed = try repository.createTimelineEvent(
+            for: task,
+            label: "Mistake",
+            timestamp: Date(timeIntervalSince1970: 200)
+        )
+
+        try repository.deleteTimelineEvent(removed)
+
+        XCTAssertEqual(try repository.timelineEvents(for: task).map(\.id), [kept.id])
+    }
+
+    @MainActor
     private func makeRepository() throws -> RepositoryStore {
         let container = try SARLogModelContainer.inMemory()
         return RepositoryStore(

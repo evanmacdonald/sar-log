@@ -41,6 +41,36 @@ final class TaskDetailViewModel {
         refreshTimeline()
     }
 
+    @discardableResult
+    func addCustomTimelineEvent(label: String = "", at timestamp: Date = .now) -> TimelineEvent? {
+        let event = try? repository.createTimelineEvent(
+            for: task,
+            label: label,
+            timestamp: timestamp,
+            isCustom: true
+        )
+        refreshTimeline()
+        return event
+    }
+
+    func updateTimelineEvent(_ event: TimelineEvent, label: String? = nil, timestamp: Date? = nil) {
+        try? repository.updateTimelineEvent(event, label: label, timestamp: timestamp)
+        refreshTimeline()
+    }
+
+    func deleteTimelineEvent(_ event: TimelineEvent) {
+        try? repository.deleteTimelineEvent(event)
+        refreshTimeline()
+    }
+
+    /// Removes an in-progress custom event whose label was never filled in,
+    /// so dismissing the editor without typing leaves no empty row behind.
+    func discardIfEmpty(_ event: TimelineEvent) {
+        if event.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            deleteTimelineEvent(event)
+        }
+    }
+
     func updateTaskNumber(_ value: String) {
         try? repository.update(task, taskNumber: value)
     }
