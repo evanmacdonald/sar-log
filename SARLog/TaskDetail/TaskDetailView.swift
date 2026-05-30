@@ -104,11 +104,7 @@ struct TaskDetailContent: View {
             NewTimelineEventEditor(model: model)
         }
         .sheet(item: $editingVitalsEntry) { entry in
-            VitalsEntryEditor(
-                model: model,
-                entry: entry,
-                previousEntry: model.previousVitalsEntry(before: entry)
-            )
+            VitalsEntryEditor(model: model, entry: entry)
         }
         .confirmationDialog(
             "Delete this task?",
@@ -399,23 +395,28 @@ struct NewTimelineEventEditor: View {
 struct VitalsEntryEditor: View {
     @Bindable var model: TaskDetailViewModel
     let entry: VitalsEntry
-    let previousEntry: VitalsEntry?
     @Environment(\.dismiss) private var dismiss
     /// In-progress text for decimal fields, keyed by field title. Lets the user
     /// type intermediate states like "36." without the parsed value snapping
     /// the text back. The parsed value is still persisted on every keystroke.
     @State private var decimalDrafts: [String: String] = [:]
-    /// Captured once when the editor appears: only a blank new entry with an
-    /// earlier reading to copy from offers prefill, so suggestions don't show
-    /// up when editing a reading recorded earlier.
-    @State private var offersPrefill = false
+    /// Whether this entry was blank when the editor opened. Captured once so
+    /// prefill is only offered on a freshly created entry, not when editing a
+    /// reading recorded earlier — even after the scribe starts filling it in.
+    @State private var startedBlank = false
     @State private var prefillConfigured = false
+
+    /// The reading to copy from, resolved live so backdating this entry's
+    /// timestamp re-picks the correct chronological predecessor.
+    private var prefillSource: VitalsEntry? {
+        model.previousVitalsEntry(before: entry)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
-                if offersPrefill, let previousEntry {
-                    prefillBanner(previousEntry)
+                if startedBlank, let source = prefillSource {
+                    prefillBanner(source)
                 }
 
                 Section("Time") {
@@ -477,7 +478,7 @@ struct VitalsEntryEditor: View {
             }
             .task {
                 if !prefillConfigured {
-                    offersPrefill = previousEntry != nil && !entry.hasClinicalData
+                    startedBlank = !entry.hasClinicalData
                     prefillConfigured = true
                 }
             }
@@ -512,9 +513,9 @@ struct VitalsEntryEditor: View {
         _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Value?>,
         format: (Value) -> String
     ) -> some View {
-        if offersPrefill,
+        if startedBlank,
            entry[keyPath: keyPath] == nil,
-           let previous = previousEntry?[keyPath: keyPath] {
+           let previous = prefillSource?[keyPath: keyPath] {
             Button {
                 model.updateVitalsEntry(entry, set: keyPath, to: Optional(previous))
             } label: {

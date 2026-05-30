@@ -109,16 +109,17 @@ final class TaskDetailViewModel {
         }
     }
 
-    /// The reading recorded immediately before `entry` (chronologically), or
-    /// `nil` if it's the first. Drives the opt-in prefill suggestions.
+    /// The most recent reading before `entry` (chronologically) that actually
+    /// has clinical data, or `nil` if there isn't one. Blank entries are
+    /// skipped so an accidental empty row doesn't become a do-nothing prefill
+    /// source and hide the real previous reading. Drives the opt-in prefill
+    /// suggestions, and is recomputed on demand so backdating `entry` picks the
+    /// correct predecessor.
     func previousVitalsEntry(before entry: VitalsEntry) -> VitalsEntry? {
-        guard
-            let index = vitalsEntries.firstIndex(where: { $0.id == entry.id }),
-            index > 0
-        else {
+        guard let index = vitalsEntries.firstIndex(where: { $0.id == entry.id }) else {
             return nil
         }
-        return vitalsEntries[index - 1]
+        return vitalsEntries[..<index].last { $0.hasClinicalData }
     }
 
     /// Carry the previous reading's values into `entry` for every field the
