@@ -64,7 +64,12 @@ them; if one feels wrong, open a discussion before coding.
 ├── AGENTS.md         # this file — agent orientation
 ├── README.md         # quick start + project links
 ├── SARLog.xcodeproj  # Xcode project
-└── SARLog/           # SwiftUI app source + co-located Tests/
+└── SARLog/           # SwiftUI app source
+    ├── Persistence/  # SwiftData models / repository + co-located Tests/
+    ├── Support/      # shared UI / helper code
+    ├── TaskDetail/   # task detail screens
+    ├── TaskList/     # task list screens / logic + co-located Tests/
+    └── Tests/        # app-level logic tests
 ```
 
 Co-located `Tests/` folders should be added beside source folders as

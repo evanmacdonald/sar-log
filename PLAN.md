@@ -86,12 +86,10 @@ PRs; flag as you reach them.
 
 1. **Scribe name** — persisted across tasks as a user default
    (auto-fills future tasks), or fresh entry each task? Affects PR 5.
-2. **Close-task UX placement** — explicit "Close task" button in task
-   detail, or only from task list? Affects PR 4.
-3. **Apple Maps linkage trigger** — auto-detect coordinates in the
+2. **Apple Maps linkage trigger** — auto-detect coordinates in the
    location text field, or a dedicated "open in Maps" affordance the
    user invokes? Affects PR 5.
-4. **PEP form sample** — Evan to deliver before PR 14 can begin.
+3. **PEP form sample** — Evan to deliver before PR 14 can begin.
 
 ## Explicit non-goals (v1)
 
@@ -155,7 +153,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Task lifecycle
 
-- [ ] **PR 4 — Task list + create / delete / close**
+- [x] **PR 4 — Task list + create / delete / close**
   - Root screen: active tasks first, then closed.
   - "New task" button creates a blank task and navigates to detail.
   - Delete with "Are you sure?" confirmation (no archive).
