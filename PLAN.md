@@ -68,7 +68,7 @@ PR 1 (bootstrap)
   └─ PR 2 (CI)
        └─ PR 3 (SwiftData + Task entity)
             └─ PR 4 (task list + lifecycle)
-                 └─ PR 5 (task detail fields + Maps link)
+                 └─ PR 5 (task detail fields)
                       ├─ PR 6 (timeline model + list)
                       │    ├─ PR 7 (predefined events)
                       │    └─ PR 8 (custom + edit/backdate)
@@ -92,10 +92,10 @@ PRs; flag as you reach them.
 
 1. **Scribe name** — persisted across tasks as a user default
    (auto-fills future tasks), or fresh entry each task? Affects PR 5.
-2. **Apple Maps linkage trigger** — auto-detect coordinates in the
-   location text field, or a dedicated "open in Maps" affordance the
-   user invokes? Affects PR 5.
-3. **PEP form sample** — Evan to deliver before PR 14 can begin.
+2. **PEP form sample** — Evan to deliver before PR 14 can begin.
+
+_Resolved: Apple Maps / coordinate linkage — dropped entirely. The team
+uses separate mapping software, so location is free text only (charter §9)._
 
 ## Explicit non-goals (v1)
 
@@ -105,7 +105,8 @@ Do not implement these in any PR. From charter §9:
 - No multi-device sync
 - No Apple Watch companion
 - No cloud anything (no accounts, no backend, no remote storage)
-- No in-app map view (Apple Maps URL-scheme link only — see PR 5)
+- No map view and no location / coordinate linking of any kind —
+  mapping is handled by separate software; location is free text only
 - No voice input for notes
 - No audit trail on edits
 - No custom-event personal library
@@ -168,15 +169,17 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** list reflects state after create / delete / close
     with no manual refresh; deletion confirmation cannot be bypassed.
 
-- [x] **PR 5 — Task detail: subject + location + notes + Maps link**
+- [x] **PR 5 — Task detail: subject + location + notes**
   - Editable fields: taskNumber, subjectName, location (free text),
     scribeName, notes.
-  - Per charter §9: tapping a location that looks like coordinates
-    opens Apple Maps via URL scheme. No in-app map view.
+  - Location is free-text context only — no coordinate parsing and no
+    map / navigation linking (charter §9). Mapping lives in separate
+    software the team already uses.
   - Auto-save on every keystroke.
-  - **Acceptance:** all fields persist live; Maps link opens Apple
-    Maps from a coordinate-shaped location string; one-handed
-    reachable.
+  - **Acceptance:** all fields persist live; one-handed reachable.
+  - _Note: the original Apple Maps URL-scheme link shipped in this PR
+    was removed in a later change — the app no longer interprets the
+    location field as coordinates._
 
 ### Timeline
 

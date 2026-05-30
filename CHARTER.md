@@ -114,7 +114,9 @@ Design the PDF to mirror the team's current paper notebook / official PEP form.
 - No multi-device sync
 - No Apple Watch companion
 - No cloud anything
-- No in-app map view (coordinates shared to Apple Maps via URL scheme)
+- No map view or location/coordinate linking of any kind. Mapping and
+  navigation are handled by separate software the team already uses; the
+  location field is free-text context only (e.g. "Eagle Ridge, Coquitlam")
 - No voice input for notes
 - No audit trail on edits
 - No custom-event personal library

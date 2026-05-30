@@ -19,10 +19,6 @@ final class TaskDetailViewModel {
         self.init(task: task, repository: TaskRepository(context: context))
     }
 
-    var mapsURL: URL? {
-        CoordinateLocationParser.appleMapsURL(for: task.location)
-    }
-
     var predefinedTimelineEvents: [PredefinedTimelineEvent] {
         PredefinedTimelineEvent.all
     }

@@ -23,7 +23,6 @@ struct TaskDetailView: View {
 
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
-    @Environment(\.openURL) private var openURL
     @State private var editingEvent: TimelineEvent?
     @State private var pendingDraftEvent: TimelineEvent?
     private let eventButtonColumns = [
@@ -119,17 +118,6 @@ struct TaskDetailContent: View {
             }
             .buttonStyle(.bordered)
             .accessibilityLabel("Add custom event")
-
-            if let mapsURL = model.mapsURL {
-                Button {
-                    openURL(mapsURL)
-                } label: {
-                    Label("Open in Maps", systemImage: "map")
-                        .font(.title3.bold())
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                }
-                .buttonStyle(.borderedProminent)
-            }
         }
         .padding()
         .background(.bar)
