@@ -37,4 +37,25 @@ final class TaskDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(model.mapsURL?.host, "maps.apple.com")
     }
+
+    @MainActor
+    func testTimelineEventsLoadOldestFirst() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let latest = try repository.createTimelineEvent(
+            for: task,
+            label: "On scene",
+            timestamp: Date(timeIntervalSince1970: 300)
+        )
+        let earliest = try repository.createTimelineEvent(
+            for: task,
+            label: "Callout from ECC",
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        XCTAssertEqual(model.timelineEvents.map(\.id), [earliest.id, latest.id])
+    }
 }

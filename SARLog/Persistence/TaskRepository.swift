@@ -105,7 +105,72 @@ struct TaskRepository {
     }
 
     func delete(_ task: SARTask) throws {
+        for event in try timelineEvents(for: task) {
+            context.delete(event)
+        }
         context.delete(task)
         try context.save()
+    }
+
+    @discardableResult
+    func createTimelineEvent(
+        id: UUID = UUID(),
+        taskId: UUID,
+        label: String,
+        timestamp: Date = .now,
+        isCustom: Bool = false
+    ) throws -> TimelineEvent {
+        let event = TimelineEvent(
+            id: id,
+            taskId: taskId,
+            label: label,
+            timestamp: timestamp,
+            isCustom: isCustom
+        )
+
+        context.insert(event)
+        try context.save()
+        return event
+    }
+
+    @discardableResult
+    func createTimelineEvent(
+        for task: SARTask,
+        id: UUID = UUID(),
+        label: String,
+        timestamp: Date = .now,
+        isCustom: Bool = false
+    ) throws -> TimelineEvent {
+        try createTimelineEvent(
+            id: id,
+            taskId: task.id,
+            label: label,
+            timestamp: timestamp,
+            isCustom: isCustom
+        )
+    }
+
+    func timelineEvents(for task: SARTask) throws -> [TimelineEvent] {
+        try timelineEvents(taskId: task.id)
+    }
+
+    func timelineEvents(taskId: UUID) throws -> [TimelineEvent] {
+        var descriptor = FetchDescriptor<TimelineEvent>(
+            predicate: #Predicate { $0.taskId == taskId }
+        )
+        descriptor.includePendingChanges = true
+        return sortTimelineEvents(try context.fetch(descriptor))
+    }
+
+    private func sortTimelineEvents(_ events: [TimelineEvent]) -> [TimelineEvent] {
+        events.sorted { first, second in
+            if first.timestamp != second.timestamp {
+                return first.timestamp < second.timestamp
+            }
+            if first.label != second.label {
+                return first.label < second.label
+            }
+            return first.id.uuidString < second.id.uuidString
+        }
     }
 }

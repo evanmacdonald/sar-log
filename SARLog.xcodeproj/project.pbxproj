@@ -27,6 +27,7 @@
 		1A2B3C4D5E6F700100000012 /* CoordinateLocationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011B /* CoordinateLocationParserTests.swift */; };
 		1A2B3C4D5E6F700100000013 /* TaskDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */; };
 		1A2B3C4D5E6F700100000014 /* TaskDetailViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011D /* TaskDetailViewTests.swift */; };
+		1A2B3C4D5E6F700100000015 /* TimelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		1A2B3C4D5E6F70010000011B /* CoordinateLocationParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateLocationParserTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModelTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011D /* TaskDetailViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEvent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700100000108 /* SARTask.swift */,
+				1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */,
 				1A2B3C4D5E6F700100000109 /* SARLogModelContainer.swift */,
 				1A2B3C4D5E6F700100000110 /* TaskRepository.swift */,
 				1A2B3C4D5E6F700100000307 /* Tests */,
@@ -294,6 +297,7 @@
 				1A2B3C4D5E6F700100000005 /* SARTask.swift in Sources */,
 				1A2B3C4D5E6F700100000006 /* SARLogModelContainer.swift in Sources */,
 				1A2B3C4D5E6F700100000007 /* TaskRepository.swift in Sources */,
+				1A2B3C4D5E6F700100000015 /* TimelineEvent.swift in Sources */,
 				1A2B3C4D5E6F700100000009 /* TaskListViewModel.swift in Sources */,
 				1A2B3C4D5E6F70010000000A /* TaskRowPresentation.swift in Sources */,
 				1A2B3C4D5E6F70010000000B /* TaskListView.swift in Sources */,
