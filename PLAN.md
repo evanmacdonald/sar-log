@@ -196,7 +196,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** any predefined event reachable in a single tap
     from task detail; buttons sit in the thumb zone.
 
-- [ ] **PR 8 — Custom event + edit / backdate timestamps**
+- [x] **PR 8 — Custom event + edit / backdate timestamps**
   - "Add custom event" entry with free-text label.
   - Tap any existing event to edit its label and / or timestamp
     via a date+time picker.
