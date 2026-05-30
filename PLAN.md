@@ -232,7 +232,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** every charter §4 field is enterable and saved;
     GCS total updates as E / V / M change.
 
-- [ ] **PR 11 — Prefill-from-previous opt-in**
+- [x] **PR 11 — Prefill-from-previous opt-in**
   - When starting a new vitals entry, surface the previous entry's
     values as suggestions.
   - Each field requires explicit user confirm or edit — never

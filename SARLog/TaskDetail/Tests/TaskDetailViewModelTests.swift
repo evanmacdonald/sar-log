@@ -251,6 +251,43 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testPreviousVitalsEntryReturnsChronologicalPredecessor() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let first = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        let second = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        let third = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
+
+        XCTAssertNil(model.previousVitalsEntry(before: first))
+        XCTAssertEqual(model.previousVitalsEntry(before: second)?.id, first.id)
+        XCTAssertEqual(model.previousVitalsEntry(before: third)?.id, second.id)
+    }
+
+    @MainActor
+    func testApplyPrefillCopiesPreviousValuesButKeepsEnteredOnes() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let source = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.updateVitalsEntry(source, set: \.heartRate, to: 72)
+        model.updateVitalsEntry(source, set: \.painScore, to: 4)
+
+        let target = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        model.updateVitalsEntry(target, set: \.heartRate, to: 90)
+
+        let previous = try XCTUnwrap(model.previousVitalsEntry(before: target))
+        model.applyPrefill(to: target, from: previous)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first { $0.id == target.id })
+        XCTAssertEqual(fetched.heartRate, 90, "Entered value is preserved")
+        XCTAssertEqual(fetched.painScore, 4, "Empty field is prefilled from previous")
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
     func testAddCustomTimelineEventIgnoresBlankLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)

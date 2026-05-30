@@ -364,6 +364,53 @@ final class TaskRepositoryTests: XCTestCase {
     }
 
     @MainActor
+    func testPrefillCopiesPreviousValuesIntoEmptyFields() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let source = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 100))
+        try repository.updateVitalsEntry(source, set: \.heartRate, to: 72)
+        try repository.updateVitalsEntry(source, set: \.systolicBloodPressure, to: 120)
+        try repository.updateVitalsEntry(source, set: \.diastolicBloodPressure, to: 80)
+        try repository.updateVitalsEntry(source, set: \.temperature, to: 36.7)
+        try repository.updateVitalsEntry(source, set: \.skinColour, to: "Pale")
+        try repository.updateVitalsEntry(source, set: \.leftPupilReactivity, to: "Reactive")
+
+        let target = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 200))
+
+        try repository.prefillVitalsEntry(target, from: source)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first { $0.id == target.id })
+        XCTAssertEqual(fetched.heartRate, 72)
+        XCTAssertEqual(fetched.systolicBloodPressure, 120)
+        XCTAssertEqual(fetched.diastolicBloodPressure, 80)
+        XCTAssertEqual(fetched.temperature, 36.7)
+        XCTAssertEqual(fetched.skinColour, "Pale")
+        XCTAssertEqual(fetched.leftPupilReactivity, "Reactive")
+        // Timestamp is the target's own — never carried over from the source.
+        XCTAssertEqual(fetched.timestamp, Date(timeIntervalSince1970: 200))
+    }
+
+    @MainActor
+    func testPrefillDoesNotOverwriteFieldsAlreadyEntered() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let source = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 100))
+        try repository.updateVitalsEntry(source, set: \.heartRate, to: 72)
+        try repository.updateVitalsEntry(source, set: \.respiratoryRate, to: 16)
+
+        let target = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 200))
+        try repository.updateVitalsEntry(target, set: \.heartRate, to: 88)
+
+        try repository.prefillVitalsEntry(target, from: source)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first { $0.id == target.id })
+        XCTAssertEqual(fetched.heartRate, 88, "An entered value must not be overwritten by prefill")
+        XCTAssertEqual(fetched.respiratoryRate, 16, "Empty fields still receive the previous value")
+    }
+
+    @MainActor
     private func makeRepository() throws -> RepositoryStore {
         let container = try SARLogModelContainer.inMemory()
         return RepositoryStore(

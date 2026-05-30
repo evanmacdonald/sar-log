@@ -109,6 +109,27 @@ final class TaskDetailViewModel {
         }
     }
 
+    /// The reading recorded immediately before `entry` (chronologically), or
+    /// `nil` if it's the first. Drives the opt-in prefill suggestions.
+    func previousVitalsEntry(before entry: VitalsEntry) -> VitalsEntry? {
+        guard
+            let index = vitalsEntries.firstIndex(where: { $0.id == entry.id }),
+            index > 0
+        else {
+            return nil
+        }
+        return vitalsEntries[index - 1]
+    }
+
+    /// Carry the previous reading's values into `entry` for every field the
+    /// scribe hasn't already filled. Explicit opt-in — never called
+    /// automatically.
+    func applyPrefill(to entry: VitalsEntry, from source: VitalsEntry) {
+        performMutation {
+            try repository.prefillVitalsEntry(entry, from: source)
+        }
+    }
+
     func updateTaskNumber(_ value: String) {
         updateTask {
             try repository.update(task, taskNumber: value)

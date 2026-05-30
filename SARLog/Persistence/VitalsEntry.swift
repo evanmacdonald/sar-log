@@ -81,6 +81,31 @@ final class VitalsEntry {
         guard let gcsEye, let gcsVerbal, let gcsMotor else { return nil }
         return gcsEye + gcsVerbal + gcsMotor
     }
+
+    /// True once any clinical field has been recorded. Timestamp is excluded —
+    /// a fresh entry always has one. Used to decide whether to offer prefill
+    /// from the previous reading (only on an otherwise-blank new entry).
+    var hasClinicalData: Bool {
+        heartRate != nil
+            || systolicBloodPressure != nil
+            || diastolicBloodPressure != nil
+            || oxygenSaturation != nil
+            || respiratoryRate != nil
+            || temperature != nil
+            || gcsEye != nil
+            || gcsVerbal != nil
+            || gcsMotor != nil
+            || leftPupilSize != nil
+            || leftPupilReactivity != nil
+            || rightPupilSize != nil
+            || rightPupilReactivity != nil
+            || painScore != nil
+            || capillaryRefill != nil
+            || skinColour != nil
+            || skinTemperature != nil
+            || skinMoisture != nil
+            || levelOfConsciousness != nil
+    }
 }
 
 /// Valid ranges for the numeric vitals fields. Used to clamp number-pad input

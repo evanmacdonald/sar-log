@@ -64,4 +64,21 @@ final class SARLogTests: XCTestCase {
         XCTAssertFalse(VitalsFieldOptions.skinMoisture.isEmpty)
         XCTAssertFalse(VitalsFieldOptions.capillaryRefill.isEmpty)
     }
+
+    // MARK: - hasClinicalData (drives prefill eligibility)
+
+    func testHasClinicalDataFalseForFreshEntry() {
+        let entry = VitalsEntry(taskId: UUID())
+        XCTAssertFalse(entry.hasClinicalData)
+    }
+
+    func testHasClinicalDataTrueWhenAnyFieldSet() {
+        let numeric = VitalsEntry(taskId: UUID())
+        numeric.respiratoryRate = 16
+        XCTAssertTrue(numeric.hasClinicalData)
+
+        let categorical = VitalsEntry(taskId: UUID())
+        categorical.skinColour = "Pale"
+        XCTAssertTrue(categorical.hasClinicalData)
+    }
 }
