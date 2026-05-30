@@ -236,6 +236,41 @@ struct TaskRepository {
         try saveOrRollback()
     }
 
+    /// Copy clinical values from `source` into `entry`, but only for fields the
+    /// entry hasn't already recorded. Never overwrites a value the scribe has
+    /// entered, and leaves the timestamp alone. One persisted write.
+    func prefillVitalsEntry(_ entry: VitalsEntry, from source: VitalsEntry) throws {
+        copyIfEmpty(\.heartRate, from: source, to: entry)
+        copyIfEmpty(\.systolicBloodPressure, from: source, to: entry)
+        copyIfEmpty(\.diastolicBloodPressure, from: source, to: entry)
+        copyIfEmpty(\.oxygenSaturation, from: source, to: entry)
+        copyIfEmpty(\.respiratoryRate, from: source, to: entry)
+        copyIfEmpty(\.temperature, from: source, to: entry)
+        copyIfEmpty(\.gcsEye, from: source, to: entry)
+        copyIfEmpty(\.gcsVerbal, from: source, to: entry)
+        copyIfEmpty(\.gcsMotor, from: source, to: entry)
+        copyIfEmpty(\.leftPupilSize, from: source, to: entry)
+        copyIfEmpty(\.leftPupilReactivity, from: source, to: entry)
+        copyIfEmpty(\.rightPupilSize, from: source, to: entry)
+        copyIfEmpty(\.rightPupilReactivity, from: source, to: entry)
+        copyIfEmpty(\.painScore, from: source, to: entry)
+        copyIfEmpty(\.capillaryRefill, from: source, to: entry)
+        copyIfEmpty(\.skinColour, from: source, to: entry)
+        copyIfEmpty(\.skinTemperature, from: source, to: entry)
+        copyIfEmpty(\.skinMoisture, from: source, to: entry)
+        copyIfEmpty(\.levelOfConsciousness, from: source, to: entry)
+        try saveOrRollback()
+    }
+
+    private func copyIfEmpty<Value>(
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Value?>,
+        from source: VitalsEntry,
+        to entry: VitalsEntry
+    ) {
+        guard entry[keyPath: keyPath] == nil else { return }
+        entry[keyPath: keyPath] = source[keyPath: keyPath]
+    }
+
     func vitalsEntries(for task: SARTask) throws -> [VitalsEntry] {
         try vitalsEntries(taskId: task.id)
     }

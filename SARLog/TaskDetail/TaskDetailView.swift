@@ -387,6 +387,11 @@ struct NewTimelineEventEditor: View {
 /// Full vitals entry form. Every field auto-saves on each keystroke / selection
 /// — "Done" only dismisses. All numeric input uses a number pad (no steppers,
 /// per charter §4), and categorical fields are single-tap menu pickers.
+///
+/// When opened on a blank new entry and an earlier reading exists, each field
+/// offers the previous value as a one-tap suggestion (plus an "apply all"
+/// shortcut). Suggestions are opt-in: nothing is carried forward until the
+/// scribe taps it, and an unconfirmed suggestion is never saved.
 struct VitalsEntryEditor: View {
     @Bindable var model: TaskDetailViewModel
     let entry: VitalsEntry
@@ -395,10 +400,25 @@ struct VitalsEntryEditor: View {
     /// type intermediate states like "36." without the parsed value snapping
     /// the text back. The parsed value is still persisted on every keystroke.
     @State private var decimalDrafts: [String: String] = [:]
+    /// Whether this entry was blank when the editor opened. Captured once so
+    /// prefill is only offered on a freshly created entry, not when editing a
+    /// reading recorded earlier — even after the scribe starts filling it in.
+    @State private var startedBlank = false
+    @State private var prefillConfigured = false
+
+    /// The reading to copy from, resolved live so backdating this entry's
+    /// timestamp re-picks the correct chronological predecessor.
+    private var prefillSource: VitalsEntry? {
+        model.previousVitalsEntry(before: entry)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
+                if startedBlank, let source = prefillSource {
+                    prefillBanner(source)
+                }
+
                 Section("Time") {
                     DatePicker(
                         "Time",
@@ -409,18 +429,18 @@ struct VitalsEntryEditor: View {
                 }
 
                 Section("Cardiorespiratory") {
-                    numberField("Heart rate (bpm)", binding: intField(\.heartRate))
-                    numberField("Systolic BP", binding: intField(\.systolicBloodPressure))
-                    numberField("Diastolic BP", binding: intField(\.diastolicBloodPressure))
-                    numberField("SpO₂ (%)", binding: intField(\.oxygenSaturation, in: 0...100))
-                    numberField("Respiratory rate", binding: intField(\.respiratoryRate))
-                    numberField("Temperature (°C)", binding: decimalField("temperature", \.temperature), decimal: true)
+                    intRow("Heart rate (bpm)", \.heartRate)
+                    intRow("Systolic BP", \.systolicBloodPressure)
+                    intRow("Diastolic BP", \.diastolicBloodPressure)
+                    intRow("SpO₂ (%)", \.oxygenSaturation, in: 0...100)
+                    intRow("Respiratory rate", \.respiratoryRate)
+                    decimalRow("Temperature (°C)", "temperature", \.temperature)
                 }
 
                 Section("Glasgow Coma Scale") {
-                    numberField("Eye (1–4)", binding: intField(\.gcsEye, in: VitalsRange.gcsEye))
-                    numberField("Verbal (1–5)", binding: intField(\.gcsVerbal, in: VitalsRange.gcsVerbal))
-                    numberField("Motor (1–6)", binding: intField(\.gcsMotor, in: VitalsRange.gcsMotor))
+                    intRow("Eye (1–4)", \.gcsEye, in: VitalsRange.gcsEye)
+                    intRow("Verbal (1–5)", \.gcsVerbal, in: VitalsRange.gcsVerbal)
+                    intRow("Motor (1–6)", \.gcsMotor, in: VitalsRange.gcsMotor)
                     LabeledContent("Total", value: entry.gcsTotal.map { String($0) } ?? "—")
                         .font(.body.weight(.semibold))
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -429,22 +449,22 @@ struct VitalsEntryEditor: View {
                 }
 
                 Section("Pupils") {
-                    numberField("Left size (mm)", binding: decimalField("leftPupilSize", \.leftPupilSize), decimal: true)
-                    optionPicker("Left reactivity", binding: optionField(\.leftPupilReactivity), options: VitalsFieldOptions.pupilReactivity)
-                    numberField("Right size (mm)", binding: decimalField("rightPupilSize", \.rightPupilSize), decimal: true)
-                    optionPicker("Right reactivity", binding: optionField(\.rightPupilReactivity), options: VitalsFieldOptions.pupilReactivity)
+                    decimalRow("Left size (mm)", "leftPupilSize", \.leftPupilSize)
+                    optionRow("Left reactivity", \.leftPupilReactivity, options: VitalsFieldOptions.pupilReactivity)
+                    decimalRow("Right size (mm)", "rightPupilSize", \.rightPupilSize)
+                    optionRow("Right reactivity", \.rightPupilReactivity, options: VitalsFieldOptions.pupilReactivity)
                 }
 
                 Section("Other") {
-                    numberField("Pain (0–10)", binding: intField(\.painScore, in: VitalsRange.pain))
-                    optionPicker("Capillary refill", binding: optionField(\.capillaryRefill), options: VitalsFieldOptions.capillaryRefill)
-                    optionPicker("LOC / AVPU", binding: optionField(\.levelOfConsciousness), options: VitalsFieldOptions.levelOfConsciousness)
+                    intRow("Pain (0–10)", \.painScore, in: VitalsRange.pain)
+                    optionRow("Capillary refill", \.capillaryRefill, options: VitalsFieldOptions.capillaryRefill)
+                    optionRow("LOC / AVPU", \.levelOfConsciousness, options: VitalsFieldOptions.levelOfConsciousness)
                 }
 
                 Section("Skin") {
-                    optionPicker("Colour", binding: optionField(\.skinColour), options: VitalsFieldOptions.skinColour)
-                    optionPicker("Temperature", binding: optionField(\.skinTemperature), options: VitalsFieldOptions.skinTemperature)
-                    optionPicker("Moisture", binding: optionField(\.skinMoisture), options: VitalsFieldOptions.skinMoisture)
+                    optionRow("Colour", \.skinColour, options: VitalsFieldOptions.skinColour)
+                    optionRow("Temperature", \.skinTemperature, options: VitalsFieldOptions.skinTemperature)
+                    optionRow("Moisture", \.skinMoisture, options: VitalsFieldOptions.skinMoisture)
                 }
             }
             .navigationTitle("Vitals")
@@ -456,33 +476,113 @@ struct VitalsEntryEditor: View {
                     }
                 }
             }
+            .task {
+                if !prefillConfigured {
+                    startedBlank = !entry.hasClinicalData
+                    prefillConfigured = true
+                }
+            }
         }
     }
 
-    // MARK: - Field builders
+    // MARK: - Prefill
 
-    private func numberField(_ title: String, binding: Binding<String>, decimal: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.caption.weight(.semibold))
+    private func prefillBanner(_ source: VitalsEntry) -> some View {
+        Section {
+            Text("Last reading at \(source.timestamp.formatted(date: .omitted, time: .shortened)). Tap a field's suggestion to copy it, or copy them all.")
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-            TextField(title, text: binding)
-                .keyboardType(decimal ? .decimalPad : .numberPad)
+            Button {
+                model.applyPrefill(to: entry, from: source)
+            } label: {
+                Label("Use all previous values", systemImage: "doc.on.doc")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityLabel("Use all previous values")
+        } header: {
+            Text("Prefill from previous")
+        }
+    }
+
+    /// One-tap suggestion shown beneath an empty field when prefill is offered
+    /// and the previous reading has a value for it.
+    @ViewBuilder
+    private func suggestion<Value: Equatable>(
+        _ title: String,
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Value?>,
+        format: (Value) -> String
+    ) -> some View {
+        if startedBlank,
+           entry[keyPath: keyPath] == nil,
+           let previous = prefillSource?[keyPath: keyPath] {
+            Button {
+                model.updateVitalsEntry(entry, set: keyPath, to: Optional(previous))
+            } label: {
+                Label("Use \(format(previous))", systemImage: "arrow.uturn.down")
+                    .font(.footnote)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Use previous \(title): \(format(previous))")
+        }
+    }
+
+    // MARK: - Field rows
+
+    private func intRow(
+        _ title: String,
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Int?>,
+        in range: ClosedRange<Int>? = nil
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            fieldLabel(title)
+            TextField(title, text: intField(keyPath, in: range))
+                .keyboardType(.numberPad)
                 .font(.body)
                 .accessibilityLabel(title)
+            suggestion(title, keyPath) { String($0) }
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
     }
 
-    private func optionPicker(_ title: String, binding: Binding<String?>, options: [String]) -> some View {
-        Picker(title, selection: binding) {
-            Text("—").tag(String?.none)
-            ForEach(options, id: \.self) { option in
-                Text(option).tag(String?.some(option))
-            }
+    private func decimalRow(
+        _ title: String,
+        _ key: String,
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Double?>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            fieldLabel(title)
+            TextField(title, text: decimalField(key, keyPath))
+                .keyboardType(.decimalPad)
+                .font(.body)
+                .accessibilityLabel(title)
+            suggestion(title, keyPath) { String($0) }
         }
-        .frame(minHeight: 44)
-        .accessibilityLabel(title)
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+
+    private func optionRow(
+        _ title: String,
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, String?>,
+        options: [String]
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Picker(title, selection: optionField(keyPath)) {
+                Text("—").tag(String?.none)
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(String?.some(option))
+                }
+            }
+            .frame(minHeight: 44)
+            .accessibilityLabel(title)
+            suggestion(title, keyPath) { $0 }
+        }
+    }
+
+    private func fieldLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
     }
 
     // MARK: - Bindings

@@ -109,6 +109,28 @@ final class TaskDetailViewModel {
         }
     }
 
+    /// The most recent reading before `entry` (chronologically) that actually
+    /// has clinical data, or `nil` if there isn't one. Blank entries are
+    /// skipped so an accidental empty row doesn't become a do-nothing prefill
+    /// source and hide the real previous reading. Drives the opt-in prefill
+    /// suggestions, and is recomputed on demand so backdating `entry` picks the
+    /// correct predecessor.
+    func previousVitalsEntry(before entry: VitalsEntry) -> VitalsEntry? {
+        guard let index = vitalsEntries.firstIndex(where: { $0.id == entry.id }) else {
+            return nil
+        }
+        return vitalsEntries[..<index].last { $0.hasClinicalData }
+    }
+
+    /// Carry the previous reading's values into `entry` for every field the
+    /// scribe hasn't already filled. Explicit opt-in — never called
+    /// automatically.
+    func applyPrefill(to entry: VitalsEntry, from source: VitalsEntry) {
+        performMutation {
+            try repository.prefillVitalsEntry(entry, from: source)
+        }
+    }
+
     func updateTaskNumber(_ value: String) {
         updateTask {
             try repository.update(task, taskNumber: value)

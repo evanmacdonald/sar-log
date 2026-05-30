@@ -251,6 +251,73 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testPreviousVitalsEntryReturnsNearestEarlierEntryWithData() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let first = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.updateVitalsEntry(first, set: \.heartRate, to: 72)
+        let second = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        model.updateVitalsEntry(second, set: \.heartRate, to: 80)
+        let third = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
+
+        XCTAssertNil(model.previousVitalsEntry(before: first))
+        XCTAssertEqual(model.previousVitalsEntry(before: second)?.id, first.id)
+        XCTAssertEqual(model.previousVitalsEntry(before: third)?.id, second.id)
+    }
+
+    @MainActor
+    func testPreviousVitalsEntrySkipsBlankEntries() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let withData = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.updateVitalsEntry(withData, set: \.heartRate, to: 72)
+        // An accidental blank row recorded between the real reading and the new one.
+        try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        let newest = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
+
+        // The blank predecessor is skipped in favour of the last reading with data.
+        XCTAssertEqual(model.previousVitalsEntry(before: newest)?.id, withData.id)
+    }
+
+    @MainActor
+    func testPreviousVitalsEntryIsNilWhenOnlyBlankPredecessorsExist() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        let newest = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+
+        XCTAssertNil(model.previousVitalsEntry(before: newest))
+    }
+
+    @MainActor
+    func testApplyPrefillCopiesPreviousValuesButKeepsEnteredOnes() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let source = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.updateVitalsEntry(source, set: \.heartRate, to: 72)
+        model.updateVitalsEntry(source, set: \.painScore, to: 4)
+
+        let target = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        model.updateVitalsEntry(target, set: \.heartRate, to: 90)
+
+        let previous = try XCTUnwrap(model.previousVitalsEntry(before: target))
+        model.applyPrefill(to: target, from: previous)
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first { $0.id == target.id })
+        XCTAssertEqual(fetched.heartRate, 90, "Entered value is preserved")
+        XCTAssertEqual(fetched.painScore, 4, "Empty field is prefilled from previous")
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
     func testAddCustomTimelineEventIgnoresBlankLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
