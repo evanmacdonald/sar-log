@@ -71,6 +71,11 @@ struct TaskDetailContent: View {
         }
         .navigationTitle(TaskRowPresentation.title(taskNumber: model.task.taskNumber, subjectName: model.task.subjectName))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                taskActionsMenu
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             bottomActionPanel
         }
@@ -103,37 +108,31 @@ struct TaskDetailContent: View {
         }
     }
 
-    private var bottomActionPanel: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                Button {
-                    if model.task.closedAt == nil {
-                        model.closeTask()
-                    } else {
-                        model.reopenTask()
-                    }
-                } label: {
-                    Label(
-                        model.task.closedAt == nil ? "Close task" : "Reopen task",
-                        systemImage: model.task.closedAt == nil ? "checkmark.circle" : "arrow.uturn.backward.circle"
-                    )
-                    .font(.title3.weight(.semibold))
-                    .frame(maxWidth: .infinity, minHeight: 56)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityLabel(model.task.closedAt == nil ? "Close task" : "Reopen task")
-
-                Button(role: .destructive) {
-                    isConfirmingDelete = true
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                        .font(.title3.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 56)
-                }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("Delete task")
+    private var taskActionsMenu: some View {
+        Menu {
+            Button {
+                toggleTaskClosedState()
+            } label: {
+                Label(
+                    model.task.closedAt == nil ? "Close task" : "Reopen task",
+                    systemImage: model.task.closedAt == nil ? "checkmark.circle" : "arrow.uturn.backward.circle"
+                )
             }
 
+            Button(role: .destructive) {
+                isConfirmingDelete = true
+            } label: {
+                Label("Delete task", systemImage: "trash")
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .imageScale(.large)
+        }
+        .accessibilityLabel("Task actions")
+    }
+
+    private var bottomActionPanel: some View {
+        VStack(spacing: 12) {
             LazyVGrid(columns: eventButtonColumns, spacing: 10) {
                 ForEach(model.predefinedTimelineEvents) { event in
                     Button {
@@ -167,6 +166,14 @@ struct TaskDetailContent: View {
         }
         .padding()
         .background(.bar)
+    }
+
+    private func toggleTaskClosedState() {
+        if model.task.closedAt == nil {
+            model.closeTask()
+        } else {
+            model.reopenTask()
+        }
     }
 
     private var errorBinding: Binding<Bool> {
