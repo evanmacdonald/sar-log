@@ -99,4 +99,85 @@ final class TaskDetailViewModelTests: XCTestCase {
         XCTAssertFalse(event.isCustom)
         XCTAssertEqual(try repository.timelineEvents(for: task).map(\.id), [event.id])
     }
+
+    @MainActor
+    func testAddCustomTimelineEventMarksEventCustomAndRefreshesTimeline() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        let event = try XCTUnwrap(
+            model.addCustomTimelineEvent(label: "Helicopter overhead", at: Date(timeIntervalSince1970: 400))
+        )
+
+        XCTAssertTrue(event.isCustom)
+        XCTAssertEqual(event.label, "Helicopter overhead")
+        XCTAssertEqual(model.timelineEvents.map(\.id), [event.id])
+    }
+
+    @MainActor
+    func testEditingTimelineEventLabelPersistsImmediately() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let event = try XCTUnwrap(model.addCustomTimelineEvent(at: Date(timeIntervalSince1970: 100)))
+
+        model.updateTimelineEvent(event, label: "Subject located")
+
+        XCTAssertEqual(model.timelineEvents.first?.label, "Subject located")
+        XCTAssertEqual(try repository.timelineEvents(for: task).first?.label, "Subject located")
+    }
+
+    @MainActor
+    func testBackdatingTimelineEventReordersTheList() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let first = try XCTUnwrap(model.addCustomTimelineEvent(label: "First", at: Date(timeIntervalSince1970: 100)))
+        let second = try XCTUnwrap(model.addCustomTimelineEvent(label: "Second", at: Date(timeIntervalSince1970: 200)))
+
+        XCTAssertEqual(model.timelineEvents.map(\.id), [first.id, second.id])
+
+        // Backdate the second event to before the first.
+        model.updateTimelineEvent(second, timestamp: Date(timeIntervalSince1970: 50))
+
+        XCTAssertEqual(model.timelineEvents.map(\.id), [second.id, first.id])
+    }
+
+    @MainActor
+    func testDeleteTimelineEventRemovesItFromTheList() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let kept = try XCTUnwrap(model.addCustomTimelineEvent(label: "Kept", at: Date(timeIntervalSince1970: 100)))
+        let removed = try XCTUnwrap(model.addCustomTimelineEvent(label: "Removed", at: Date(timeIntervalSince1970: 200)))
+
+        model.deleteTimelineEvent(removed)
+
+        XCTAssertEqual(model.timelineEvents.map(\.id), [kept.id])
+    }
+
+    @MainActor
+    func testDiscardIfEmptyRemovesUnlabeledDraftButKeepsLabeledEvents() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        let blankDraft = try XCTUnwrap(model.addCustomTimelineEvent())
+        model.discardIfEmpty(blankDraft)
+        XCTAssertTrue(model.timelineEvents.isEmpty)
+
+        let whitespaceDraft = try XCTUnwrap(model.addCustomTimelineEvent(label: "   "))
+        model.discardIfEmpty(whitespaceDraft)
+        XCTAssertTrue(model.timelineEvents.isEmpty)
+
+        let labeled = try XCTUnwrap(model.addCustomTimelineEvent(label: "Real event"))
+        model.discardIfEmpty(labeled)
+        XCTAssertEqual(model.timelineEvents.map(\.id), [labeled.id])
+    }
 }

@@ -150,6 +150,26 @@ struct TaskRepository {
         )
     }
 
+    func updateTimelineEvent(
+        _ event: TimelineEvent,
+        label: String? = nil,
+        timestamp: Date? = nil
+    ) throws {
+        if let label {
+            event.label = label
+        }
+        if let timestamp {
+            event.timestamp = timestamp
+        }
+
+        try context.save()
+    }
+
+    func deleteTimelineEvent(_ event: TimelineEvent) throws {
+        context.delete(event)
+        try context.save()
+    }
+
     func timelineEvents(for task: SARTask) throws -> [TimelineEvent] {
         try timelineEvents(taskId: task.id)
     }

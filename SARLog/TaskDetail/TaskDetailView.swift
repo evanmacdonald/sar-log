@@ -24,6 +24,8 @@ struct TaskDetailView: View {
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
     @Environment(\.openURL) private var openURL
+    @State private var editingEvent: TimelineEvent?
+    @State private var pendingDraftEvent: TimelineEvent?
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -51,7 +53,13 @@ struct TaskDetailContent: View {
                         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
                 } else {
                     ForEach(model.timelineEvents) { event in
-                        TimelineEventRow(event: event)
+                        Button {
+                            editingEvent = event
+                        } label: {
+                            TimelineEventRow(event: event)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Edit event")
                     }
                 }
             }
@@ -64,6 +72,16 @@ struct TaskDetailContent: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             bottomActionPanel
+        }
+        .sheet(item: $editingEvent, onDismiss: discardEmptyDraft) { event in
+            TimelineEventEditor(model: model, event: event)
+        }
+    }
+
+    private func discardEmptyDraft() {
+        if let pendingDraftEvent {
+            model.discardIfEmpty(pendingDraftEvent)
+            self.pendingDraftEvent = nil
         }
     }
 
@@ -89,6 +107,18 @@ struct TaskDetailContent: View {
                     .accessibilityLabel(event.label)
                 }
             }
+
+            Button {
+                let draft = model.addCustomTimelineEvent()
+                pendingDraftEvent = draft
+                editingEvent = draft
+            } label: {
+                Label("Add custom event", systemImage: "plus.circle")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 56)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityLabel("Add custom event")
 
             if let mapsURL = model.mapsURL {
                 Button {
@@ -167,5 +197,67 @@ struct TimelineEventRow: View {
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Edit (or backdate) a single timeline event. Every change auto-saves
+/// immediately — "Done" only dismisses, there is no Save button.
+struct TimelineEventEditor: View {
+    @Bindable var model: TaskDetailViewModel
+    let event: TimelineEvent
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Event") {
+                    TextField("Label", text: label, axis: .vertical)
+                        .lineLimit(1...3)
+                        .textInputAutocapitalization(.sentences)
+                        .accessibilityLabel("Event label")
+                }
+                Section("Time") {
+                    DatePicker(
+                        "Time",
+                        selection: timestamp,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .accessibilityLabel("Event time")
+                }
+                Section {
+                    Button(role: .destructive) {
+                        model.deleteTimelineEvent(event)
+                        dismiss()
+                    } label: {
+                        Label("Delete event", systemImage: "trash")
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .accessibilityLabel("Delete event")
+                }
+            }
+            .navigationTitle("Edit event")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var label: Binding<String> {
+        Binding(
+            get: { event.label },
+            set: { model.updateTimelineEvent(event, label: $0) }
+        )
+    }
+
+    private var timestamp: Binding<Date> {
+        Binding(
+            get: { event.timestamp },
+            set: { model.updateTimelineEvent(event, timestamp: $0) }
+        )
     }
 }
