@@ -222,7 +222,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** can create an empty `VitalsEntry`; the entry
     appears as a timestamped row.
 
-- [ ] **PR 10 — All vitals fields**
+- [x] **PR 10 — All vitals fields**
   - HR, BP (systolic / diastolic), SpO₂, RR, Temp, GCS (E / V / M
     with computed sum), Pupils (size + reactivity + L/R separately),
     Pain 0–10, capillary refill, Skin (colour / temp / moisture),
