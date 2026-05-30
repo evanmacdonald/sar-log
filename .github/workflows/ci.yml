@@ -64,7 +64,7 @@ jobs:
           if [ ! -f "$binary" ]; then
             binary="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/SARLog.app/SARLog"
           fi
-          xcrun llvm-cov export -instr-profile "$profdata" "$binary" > coverage/llvm-coverage.json
+          xcrun llvm-cov export --show-branch-summary -instr-profile "$profdata" "$binary" > coverage/llvm-coverage.json
           ruby ci/check_coverage.rb coverage/llvm-coverage.json
 
       - name: Upload coverage artifact

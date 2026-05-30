@@ -48,9 +48,6 @@ def metrics_from_llvm_cov(report)
   lines = sum_llvm_summary(files, "lines")
   functions = sum_llvm_summary(files, "functions")
   branches = sum_llvm_summary(files, "branches")
-  regions = sum_llvm_summary(files, "regions")
-  branch_like = branches.fetch("count").positive? ? branches : regions
-  branch_label = branches.fetch("count").positive? ? "branches" : "LLVM regions"
 
   {
     statements: {
@@ -58,8 +55,8 @@ def metrics_from_llvm_cov(report)
       detail: "#{lines.fetch('covered')}/#{lines.fetch('count')} executable lines"
     },
     branches: {
-      percent: branch_like.fetch("percent").to_f,
-      detail: "#{branch_like.fetch('covered')}/#{branch_like.fetch('count')} #{branch_label}"
+      percent: branches.fetch("count").positive? ? branches.fetch("percent").to_f : nil,
+      detail: branches.fetch("count").positive? ? "#{branches.fetch('covered')}/#{branches.fetch('count')} branches" : "unavailable in llvm-cov JSON"
     },
     functions: {
       percent: functions.fetch("percent").to_f,
