@@ -25,6 +25,7 @@ struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var editingEvent: TimelineEvent?
+    @State private var editingVitalsEntry: VitalsEntry?
     @State private var isAddingCustomEvent = false
     @State private var isConfirmingDelete = false
     private let eventButtonColumns = [
@@ -64,6 +65,23 @@ struct TaskDetailContent: View {
                     }
                 }
             }
+            Section("Vitals") {
+                if model.vitalsEntries.isEmpty {
+                    Text("No vitals yet")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                } else {
+                    ForEach(model.vitalsEntries) { entry in
+                        Button {
+                            editingVitalsEntry = entry
+                        } label: {
+                            VitalsEntryRow(entry: entry)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Edit vitals")
+                    }
+                }
+            }
             Section("Status") {
                 LabeledContent("Created", value: model.task.createdAt.formatted(date: .abbreviated, time: .shortened))
                 LabeledContent("State", value: model.task.closedAt == nil ? "Active" : "Closed")
@@ -84,6 +102,9 @@ struct TaskDetailContent: View {
         }
         .sheet(isPresented: $isAddingCustomEvent) {
             NewTimelineEventEditor(model: model)
+        }
+        .sheet(item: $editingVitalsEntry) { entry in
+            VitalsEntryEditor(model: model, entry: entry)
         }
         .confirmationDialog(
             "Delete this task?",
@@ -154,15 +175,33 @@ struct TaskDetailContent: View {
                 }
             }
 
-            Button {
-                isAddingCustomEvent = true
-            } label: {
-                Label("Add custom event", systemImage: "plus.circle")
-                    .font(.title3.weight(.semibold))
-                    .frame(maxWidth: .infinity, minHeight: 56)
+            HStack(spacing: 10) {
+                Button {
+                    isAddingCustomEvent = true
+                } label: {
+                    Label("Custom event", systemImage: "plus.circle")
+                        .font(.headline.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Add custom event")
+
+                Button {
+                    if let entry = model.addVitalsEntry() {
+                        editingVitalsEntry = entry
+                    }
+                } label: {
+                    Label("Add vitals", systemImage: "waveform.path.ecg")
+                        .font(.headline.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityLabel("Add vitals")
             }
-            .buttonStyle(.bordered)
-            .accessibilityLabel("Add custom event")
         }
         .padding()
         .background(.bar)
@@ -233,6 +272,22 @@ struct TaskDetailContent: View {
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+}
+
+struct VitalsEntryRow: View {
+    let entry: VitalsEntry
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(entry.timestamp.formatted(date: .abbreviated, time: .shortened))
+                .font(.headline)
+            Spacer()
+            LabeledContent("HR", value: entry.heartRate.map { String($0) } ?? "--")
+                .font(.subheadline)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -312,6 +367,58 @@ struct NewTimelineEventEditor: View {
         } else {
             event = model.addCustomTimelineEvent(label: label, at: timestamp)
         }
+    }
+}
+
+struct VitalsEntryEditor: View {
+    @Bindable var model: TaskDetailViewModel
+    let entry: VitalsEntry
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Time") {
+                    DatePicker(
+                        "Time",
+                        selection: timestamp,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .accessibilityLabel("Vitals time")
+                }
+                Section("Vitals") {
+                    TextField("HR", text: heartRate)
+                        .keyboardType(.numberPad)
+                        .accessibilityLabel("Heart rate")
+                }
+            }
+            .navigationTitle("Vitals")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var timestamp: Binding<Date> {
+        Binding(
+            get: { entry.timestamp },
+            set: { model.updateVitalsEntryTimestamp(entry, timestamp: $0) }
+        )
+    }
+
+    private var heartRate: Binding<String> {
+        Binding(
+            get: { entry.heartRate.map { String($0) } ?? "" },
+            set: { newValue in
+                let digits = newValue.filter(\.isNumber)
+                model.updateVitalsEntryHeartRate(entry, heartRate: digits.isEmpty ? nil : Int(digits))
+            }
+        )
     }
 }
 

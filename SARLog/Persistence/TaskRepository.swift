@@ -108,6 +108,9 @@ struct TaskRepository {
         for event in try timelineEvents(for: task) {
             context.delete(event)
         }
+        for entry in try vitalsEntries(for: task) {
+            context.delete(entry)
+        }
         context.delete(task)
         try saveOrRollback()
     }
@@ -182,6 +185,58 @@ struct TaskRepository {
         return sortTimelineEvents(try context.fetch(descriptor))
     }
 
+    @discardableResult
+    func createVitalsEntry(
+        id: UUID = UUID(),
+        taskId: UUID,
+        timestamp: Date = .now
+    ) throws -> VitalsEntry {
+        let entry = VitalsEntry(
+            id: id,
+            taskId: taskId,
+            timestamp: timestamp
+        )
+
+        context.insert(entry)
+        try saveOrRollback()
+        return entry
+    }
+
+    @discardableResult
+    func createVitalsEntry(
+        for task: SARTask,
+        id: UUID = UUID(),
+        timestamp: Date = .now
+    ) throws -> VitalsEntry {
+        try createVitalsEntry(
+            id: id,
+            taskId: task.id,
+            timestamp: timestamp
+        )
+    }
+
+    func updateVitalsEntryTimestamp(_ entry: VitalsEntry, timestamp: Date) throws {
+        entry.timestamp = timestamp
+        try saveOrRollback()
+    }
+
+    func updateVitalsEntryHeartRate(_ entry: VitalsEntry, heartRate: Int?) throws {
+        entry.heartRate = heartRate
+        try saveOrRollback()
+    }
+
+    func vitalsEntries(for task: SARTask) throws -> [VitalsEntry] {
+        try vitalsEntries(taskId: task.id)
+    }
+
+    func vitalsEntries(taskId: UUID) throws -> [VitalsEntry] {
+        var descriptor = FetchDescriptor<VitalsEntry>(
+            predicate: #Predicate { $0.taskId == taskId }
+        )
+        descriptor.includePendingChanges = true
+        return sortVitalsEntries(try context.fetch(descriptor))
+    }
+
     private func sortTimelineEvents(_ events: [TimelineEvent]) -> [TimelineEvent] {
         events.sorted { first, second in
             if first.timestamp != second.timestamp {
@@ -189,6 +244,15 @@ struct TaskRepository {
             }
             if first.label != second.label {
                 return first.label < second.label
+            }
+            return first.id.uuidString < second.id.uuidString
+        }
+    }
+
+    private func sortVitalsEntries(_ entries: [VitalsEntry]) -> [VitalsEntry] {
+        entries.sorted { first, second in
+            if first.timestamp != second.timestamp {
+                return first.timestamp < second.timestamp
             }
             return first.id.uuidString < second.id.uuidString
         }

@@ -6,6 +6,7 @@ enum SARLogModelContainer {
         Schema([
             SARTask.self,
             TimelineEvent.self,
+            VitalsEntry.self,
         ])
     }
 
