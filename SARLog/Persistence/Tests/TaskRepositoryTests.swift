@@ -346,6 +346,24 @@ final class TaskRepositoryTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdateVitalsEntrySetsFieldByKeyPathAndPersists() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let entry = try repository.createVitalsEntry(for: task, timestamp: Date(timeIntervalSince1970: 100))
+
+        try repository.updateVitalsEntry(entry, set: \.respiratoryRate, to: 16)
+        try repository.updateVitalsEntry(entry, set: \.skinMoisture, to: "Diaphoretic")
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first)
+        XCTAssertEqual(fetched.respiratoryRate, 16)
+        XCTAssertEqual(fetched.skinMoisture, "Diaphoretic")
+
+        try repository.updateVitalsEntry(entry, set: \.respiratoryRate, to: nil)
+        XCTAssertNil(try repository.vitalsEntries(for: task).first?.respiratoryRate)
+    }
+
+    @MainActor
     private func makeRepository() throws -> RepositoryStore {
         let container = try SARLogModelContainer.inMemory()
         return RepositoryStore(

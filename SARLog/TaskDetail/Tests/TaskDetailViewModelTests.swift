@@ -203,6 +203,54 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdateVitalsEntryFieldsPersistImmediately() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let entry = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+
+        model.updateVitalsEntry(entry, set: \.systolicBloodPressure, to: 120)
+        model.updateVitalsEntry(entry, set: \.diastolicBloodPressure, to: 80)
+        model.updateVitalsEntry(entry, set: \.oxygenSaturation, to: 98)
+        model.updateVitalsEntry(entry, set: \.temperature, to: 36.7)
+        model.updateVitalsEntry(entry, set: \.gcsEye, to: 4)
+        model.updateVitalsEntry(entry, set: \.gcsVerbal, to: 5)
+        model.updateVitalsEntry(entry, set: \.gcsMotor, to: 6)
+        model.updateVitalsEntry(entry, set: \.leftPupilReactivity, to: "Reactive")
+        model.updateVitalsEntry(entry, set: \.painScore, to: 3)
+        model.updateVitalsEntry(entry, set: \.skinColour, to: "Pale")
+        model.updateVitalsEntry(entry, set: \.levelOfConsciousness, to: "Alert")
+
+        let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first)
+        XCTAssertEqual(fetched.systolicBloodPressure, 120)
+        XCTAssertEqual(fetched.diastolicBloodPressure, 80)
+        XCTAssertEqual(fetched.oxygenSaturation, 98)
+        XCTAssertEqual(fetched.temperature, 36.7)
+        XCTAssertEqual(fetched.gcsTotal, 15)
+        XCTAssertEqual(fetched.leftPupilReactivity, "Reactive")
+        XCTAssertEqual(fetched.painScore, 3)
+        XCTAssertEqual(fetched.skinColour, "Pale")
+        XCTAssertEqual(fetched.levelOfConsciousness, "Alert")
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testUpdateVitalsEntryFieldCanClearBackToNil() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let entry = try XCTUnwrap(model.addVitalsEntry())
+
+        model.updateVitalsEntry(entry, set: \.painScore, to: 5)
+        XCTAssertEqual(model.vitalsEntries.first?.painScore, 5)
+
+        model.updateVitalsEntry(entry, set: \.painScore, to: nil)
+        XCTAssertNil(try repository.vitalsEntries(for: task).first?.painScore)
+    }
+
+    @MainActor
     func testAddCustomTimelineEventIgnoresBlankLabels() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)

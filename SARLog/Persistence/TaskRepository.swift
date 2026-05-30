@@ -225,6 +225,17 @@ struct TaskRepository {
         try saveOrRollback()
     }
 
+    /// Set any single vitals field by key path. Keeps the auto-save contract
+    /// (one persisted write per field change) without a setter per field.
+    func updateVitalsEntry<Value>(
+        _ entry: VitalsEntry,
+        set keyPath: ReferenceWritableKeyPath<VitalsEntry, Value>,
+        to value: Value
+    ) throws {
+        entry[keyPath: keyPath] = value
+        try saveOrRollback()
+    }
+
     func vitalsEntries(for task: SARTask) throws -> [VitalsEntry] {
         try vitalsEntries(taskId: task.id)
     }

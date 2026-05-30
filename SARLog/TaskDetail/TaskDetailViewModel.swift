@@ -99,6 +99,16 @@ final class TaskDetailViewModel {
         }
     }
 
+    func updateVitalsEntry<Value>(
+        _ entry: VitalsEntry,
+        set keyPath: ReferenceWritableKeyPath<VitalsEntry, Value>,
+        to value: Value
+    ) {
+        performMutation {
+            try repository.updateVitalsEntry(entry, set: keyPath, to: value)
+        }
+    }
+
     func updateTaskNumber(_ value: String) {
         updateTask {
             try repository.update(task, taskNumber: value)

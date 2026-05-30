@@ -279,15 +279,29 @@ struct VitalsEntryRow: View {
     let entry: VitalsEntry
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(entry.timestamp.formatted(date: .abbreviated, time: .shortened))
                 .font(.headline)
-            Spacer()
-            LabeledContent("HR", value: entry.heartRate.map { String($0) } ?? "--")
+            Text(summary)
                 .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Compact one-line digest of the entered vitals, skipping empty fields.
+    private var summary: String {
+        var parts: [String] = []
+        if let hr = entry.heartRate { parts.append("HR \(hr)") }
+        if let systolic = entry.systolicBloodPressure, let diastolic = entry.diastolicBloodPressure {
+            parts.append("BP \(systolic)/\(diastolic)")
+        }
+        if let spo2 = entry.oxygenSaturation { parts.append("SpO₂ \(spo2)%") }
+        if let rr = entry.respiratoryRate { parts.append("RR \(rr)") }
+        if let total = entry.gcsTotal { parts.append("GCS \(total)") }
+        if parts.isEmpty { return "No values yet — tap to fill in" }
+        return parts.joined(separator: " · ")
     }
 }
 
@@ -370,10 +384,17 @@ struct NewTimelineEventEditor: View {
     }
 }
 
+/// Full vitals entry form. Every field auto-saves on each keystroke / selection
+/// — "Done" only dismisses. All numeric input uses a number pad (no steppers,
+/// per charter §4), and categorical fields are single-tap menu pickers.
 struct VitalsEntryEditor: View {
     @Bindable var model: TaskDetailViewModel
     let entry: VitalsEntry
     @Environment(\.dismiss) private var dismiss
+    /// In-progress text for decimal fields, keyed by field title. Lets the user
+    /// type intermediate states like "36." without the parsed value snapping
+    /// the text back. The parsed value is still persisted on every keystroke.
+    @State private var decimalDrafts: [String: String] = [:]
 
     var body: some View {
         NavigationStack {
@@ -386,10 +407,44 @@ struct VitalsEntryEditor: View {
                     )
                     .accessibilityLabel("Vitals time")
                 }
-                Section("Vitals") {
-                    TextField("HR", text: heartRate)
-                        .keyboardType(.numberPad)
-                        .accessibilityLabel("Heart rate")
+
+                Section("Cardiorespiratory") {
+                    numberField("Heart rate (bpm)", binding: intField(\.heartRate))
+                    numberField("Systolic BP", binding: intField(\.systolicBloodPressure))
+                    numberField("Diastolic BP", binding: intField(\.diastolicBloodPressure))
+                    numberField("SpO₂ (%)", binding: intField(\.oxygenSaturation, in: 0...100))
+                    numberField("Respiratory rate", binding: intField(\.respiratoryRate))
+                    numberField("Temperature (°C)", binding: decimalField("temperature", \.temperature), decimal: true)
+                }
+
+                Section("Glasgow Coma Scale") {
+                    numberField("Eye (1–4)", binding: intField(\.gcsEye, in: VitalsRange.gcsEye))
+                    numberField("Verbal (1–5)", binding: intField(\.gcsVerbal, in: VitalsRange.gcsVerbal))
+                    numberField("Motor (1–6)", binding: intField(\.gcsMotor, in: VitalsRange.gcsMotor))
+                    LabeledContent("Total", value: entry.gcsTotal.map { String($0) } ?? "—")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .accessibilityLabel("GCS total")
+                        .accessibilityValue(entry.gcsTotal.map { String($0) } ?? "Incomplete")
+                }
+
+                Section("Pupils") {
+                    numberField("Left size (mm)", binding: decimalField("leftPupilSize", \.leftPupilSize), decimal: true)
+                    optionPicker("Left reactivity", binding: optionField(\.leftPupilReactivity), options: VitalsFieldOptions.pupilReactivity)
+                    numberField("Right size (mm)", binding: decimalField("rightPupilSize", \.rightPupilSize), decimal: true)
+                    optionPicker("Right reactivity", binding: optionField(\.rightPupilReactivity), options: VitalsFieldOptions.pupilReactivity)
+                }
+
+                Section("Other") {
+                    numberField("Pain (0–10)", binding: intField(\.painScore, in: VitalsRange.pain))
+                    optionPicker("Capillary refill", binding: optionField(\.capillaryRefill), options: VitalsFieldOptions.capillaryRefill)
+                    optionPicker("LOC / AVPU", binding: optionField(\.levelOfConsciousness), options: VitalsFieldOptions.levelOfConsciousness)
+                }
+
+                Section("Skin") {
+                    optionPicker("Colour", binding: optionField(\.skinColour), options: VitalsFieldOptions.skinColour)
+                    optionPicker("Temperature", binding: optionField(\.skinTemperature), options: VitalsFieldOptions.skinTemperature)
+                    optionPicker("Moisture", binding: optionField(\.skinMoisture), options: VitalsFieldOptions.skinMoisture)
                 }
             }
             .navigationTitle("Vitals")
@@ -404,6 +459,34 @@ struct VitalsEntryEditor: View {
         }
     }
 
+    // MARK: - Field builders
+
+    private func numberField(_ title: String, binding: Binding<String>, decimal: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            TextField(title, text: binding)
+                .keyboardType(decimal ? .decimalPad : .numberPad)
+                .font(.body)
+                .accessibilityLabel(title)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+
+    private func optionPicker(_ title: String, binding: Binding<String?>, options: [String]) -> some View {
+        Picker(title, selection: binding) {
+            Text("—").tag(String?.none)
+            ForEach(options, id: \.self) { option in
+                Text(option).tag(String?.some(option))
+            }
+        }
+        .frame(minHeight: 44)
+        .accessibilityLabel(title)
+    }
+
+    // MARK: - Bindings
+
     private var timestamp: Binding<Date> {
         Binding(
             get: { entry.timestamp },
@@ -411,13 +494,30 @@ struct VitalsEntryEditor: View {
         )
     }
 
-    private var heartRate: Binding<String> {
+    private func intField(
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Int?>,
+        in range: ClosedRange<Int>? = nil
+    ) -> Binding<String> {
         Binding(
-            get: { entry.heartRate.map { String($0) } ?? "" },
+            get: { entry[keyPath: keyPath].map { String($0) } ?? "" },
+            set: { model.updateVitalsEntry(entry, set: keyPath, to: VitalsInput.boundedInt($0, in: range)) }
+        )
+    }
+
+    private func decimalField(_ key: String, _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Double?>) -> Binding<String> {
+        Binding(
+            get: { decimalDrafts[key] ?? entry[keyPath: keyPath].map { String($0) } ?? "" },
             set: { newValue in
-                let digits = newValue.filter(\.isNumber)
-                model.updateVitalsEntryHeartRate(entry, heartRate: digits.isEmpty ? nil : Int(digits))
+                decimalDrafts[key] = newValue
+                model.updateVitalsEntry(entry, set: keyPath, to: VitalsInput.decimal(newValue))
             }
+        )
+    }
+
+    private func optionField(_ keyPath: ReferenceWritableKeyPath<VitalsEntry, String?>) -> Binding<String?> {
+        Binding(
+            get: { entry[keyPath: keyPath] },
+            set: { model.updateVitalsEntry(entry, set: keyPath, to: $0) }
         )
     }
 }
