@@ -27,6 +27,12 @@ one feature.
   per item in [PR list](#pr-list). Plan/task-list bookkeeping changes may be
   pushed directly to `main`.
 - **Branch names:** `pr-<NN>-<kebab-slug>`, e.g. `pr-04-task-list`.
+- **PR numbering:** "PR N" throughout this plan is the *plan item* number —
+  stable, and encoded in branch names as `pr-NN-…`. It is **not** the GitHub
+  PR number. GitHub numbers sequentially and counts bookkeeping PRs, so the
+  two diverge (e.g. plan PR 7 merged as GitHub #12). Always cite the plan
+  number in this file and in branch names; the GitHub number lives only in
+  merge commits.
 - **Commit style:** imperative, scoped to the PR. Squash on merge.
 - **PR description template:** what the PR does, which PR number from this
   plan it implements, screenshots for any UI work, and a check that
