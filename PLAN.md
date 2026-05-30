@@ -183,7 +183,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** list renders in stable order; underlying tests
     cover insert / fetch / sort.
 
-- [ ] **PR 7 — One-tap predefined events**
+- [x] **PR 7 — One-tap predefined events**
   - Six bottom-of-screen buttons: Callout from ECC, Left hall,
     Arrived staging, Departed staging, On scene, Returning to base.
   - Tap stamps `Date.now` and appends.
