@@ -58,4 +58,45 @@ final class TaskDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(model.timelineEvents.map(\.id), [earliest.id, latest.id])
     }
+
+    @MainActor
+    func testPredefinedTimelineEventsMatchCharterLabels() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        XCTAssertEqual(
+            model.predefinedTimelineEvents.map(\.label),
+            [
+                "Callout from ECC",
+                "Left hall",
+                "Arrived staging",
+                "Departed staging",
+                "On scene",
+                "Returning to base"
+            ]
+        )
+    }
+
+    @MainActor
+    func testAddPredefinedTimelineEventPersistsImmediatelyAndRefreshesTimeline() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let timestamp = Date(timeIntervalSince1970: 700)
+
+        model.addPredefinedTimelineEvent(
+            try XCTUnwrap(model.predefinedTimelineEvents.first),
+            at: timestamp
+        )
+
+        let event = try XCTUnwrap(model.timelineEvents.first)
+        XCTAssertEqual(event.taskId, task.id)
+        XCTAssertEqual(event.label, "Callout from ECC")
+        XCTAssertEqual(event.timestamp, timestamp)
+        XCTAssertFalse(event.isCustom)
+        XCTAssertEqual(try repository.timelineEvents(for: task).map(\.id), [event.id])
+    }
 }
