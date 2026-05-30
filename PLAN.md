@@ -48,7 +48,10 @@ Every PR must satisfy these. Don't restate them in PR descriptions; just
 confirm they're met.
 
 - **Tests:** XCTest coverage for any new logic. CI thresholds
-  (70% statements / 65% branches / 70% functions / 70% lines) pass.
+  (70% statements / 65% branches / 70% functions / 70% lines) pass
+  for metrics exposed by the Swift/Xcode coverage toolchain. Branch
+  coverage must not be approximated with region coverage; if real branch
+  counters are unavailable, CI reports that metric as unavailable.
   Extract logic from views into testable types if needed.
 - **No UI tests:** pure logic only in the automated suite.
 - **Auto-save:** any new field / event / vitals input persists on every

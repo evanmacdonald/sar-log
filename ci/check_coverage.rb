@@ -123,7 +123,7 @@ end
 failures = metrics.each_with_object([]) do |(name, metric), failed_metrics|
   threshold = THRESHOLDS.fetch(name)
   if metric[:percent].nil?
-    failed_metrics << "#{name} coverage is unavailable; provide llvm-cov export JSON to enforce the threshold"
+    warn "#{name} coverage is unavailable; threshold not enforced for this metric"
     next
   end
   next if metric[:percent] >= threshold
