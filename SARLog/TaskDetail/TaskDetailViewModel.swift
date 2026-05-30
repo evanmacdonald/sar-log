@@ -8,6 +8,7 @@ final class TaskDetailViewModel {
     private let repository: TaskRepository
     let task: SARTask
     var timelineEvents: [TimelineEvent] = []
+    var errorMessage: String?
 
     init(task: SARTask, repository: TaskRepository) {
         self.task = task
@@ -24,66 +25,128 @@ final class TaskDetailViewModel {
     }
 
     func refreshTimeline() {
-        timelineEvents = (try? repository.timelineEvents(for: task)) ?? []
+        do {
+            timelineEvents = try repository.timelineEvents(for: task)
+            errorMessage = nil
+        } catch {
+            timelineEvents = []
+            errorMessage = "Timeline could not be loaded."
+        }
     }
 
     func addPredefinedTimelineEvent(_ event: PredefinedTimelineEvent, at timestamp: Date = .now) {
-        _ = try? repository.createTimelineEvent(
-            for: task,
-            label: event.label,
-            timestamp: timestamp,
-            isCustom: false
-        )
-        refreshTimeline()
+        performMutation {
+            try repository.createTimelineEvent(
+                for: task,
+                label: event.label,
+                timestamp: timestamp,
+                isCustom: false
+            )
+        }
     }
 
     @discardableResult
     func addCustomTimelineEvent(label: String = "", at timestamp: Date = .now) -> TimelineEvent? {
-        let event = try? repository.createTimelineEvent(
-            for: task,
-            label: label,
-            timestamp: timestamp,
-            isCustom: true
-        )
-        refreshTimeline()
-        return event
+        guard !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+
+        return performMutation {
+            try repository.createTimelineEvent(
+                for: task,
+                label: label,
+                timestamp: timestamp,
+                isCustom: true
+            )
+        }
     }
 
     func updateTimelineEvent(_ event: TimelineEvent, label: String? = nil, timestamp: Date? = nil) {
-        try? repository.updateTimelineEvent(event, label: label, timestamp: timestamp)
-        refreshTimeline()
+        performMutation {
+            try repository.updateTimelineEvent(event, label: label, timestamp: timestamp)
+        }
     }
 
     func deleteTimelineEvent(_ event: TimelineEvent) {
-        try? repository.deleteTimelineEvent(event)
-        refreshTimeline()
-    }
-
-    /// Removes an in-progress custom event whose label was never filled in,
-    /// so dismissing the editor without typing leaves no empty row behind.
-    func discardIfEmpty(_ event: TimelineEvent) {
-        if event.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            deleteTimelineEvent(event)
+        performMutation {
+            try repository.deleteTimelineEvent(event)
         }
     }
 
     func updateTaskNumber(_ value: String) {
-        try? repository.update(task, taskNumber: value)
+        updateTask {
+            try repository.update(task, taskNumber: value)
+        }
     }
 
     func updateSubjectName(_ value: String) {
-        try? repository.update(task, subjectName: value)
+        updateTask {
+            try repository.update(task, subjectName: value)
+        }
     }
 
     func updateLocation(_ value: String) {
-        try? repository.update(task, location: value)
+        updateTask {
+            try repository.update(task, location: value)
+        }
     }
 
     func updateScribeName(_ value: String) {
-        try? repository.update(task, scribeName: value)
+        updateTask {
+            try repository.update(task, scribeName: value)
+        }
     }
 
     func updateNotes(_ value: String) {
-        try? repository.update(task, notes: value)
+        updateTask {
+            try repository.update(task, notes: value)
+        }
+    }
+
+    func closeTask(at closedAt: Date = .now) {
+        updateTask {
+            try repository.close(task, at: closedAt)
+        }
+    }
+
+    func reopenTask() {
+        updateTask {
+            try repository.reopen(task)
+        }
+    }
+
+    @discardableResult
+    func deleteTask() -> Bool {
+        do {
+            try repository.delete(task)
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage = "Task could not be deleted. Try again before leaving this screen."
+            return false
+        }
+    }
+
+    @discardableResult
+    private func performMutation<Result>(_ operation: () throws -> Result) -> Result? {
+        do {
+            let result = try operation()
+            refreshTimeline()
+            errorMessage = nil
+            return result
+        } catch {
+            refreshTimeline()
+            errorMessage = "Change could not be saved. Try again before leaving this screen."
+            return nil
+        }
+    }
+
+    private func updateTask(_ operation: () throws -> Void) {
+        do {
+            try operation()
+            errorMessage = nil
+        } catch {
+            errorMessage = "Change could not be saved. Try again before leaving this screen."
+        }
     }
 }

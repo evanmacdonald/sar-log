@@ -43,6 +43,16 @@ struct TaskListContent: View {
             .safeAreaInset(edge: .bottom) {
                 newTaskButton
             }
+            .onAppear {
+                model.refresh()
+            }
+            .alert("Save problem", isPresented: errorBinding) {
+                Button("OK") {
+                    model.errorMessage = nil
+                }
+            } message: {
+                Text(model.errorMessage ?? "Try again before leaving this screen.")
+            }
             .confirmationDialog(
                 "Delete this task?",
                 isPresented: deletionBinding,
@@ -133,6 +143,17 @@ struct TaskListContent: View {
             set: { newValue in
                 if !newValue {
                     pendingDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { model.errorMessage != nil },
+            set: { newValue in
+                if !newValue {
+                    model.errorMessage = nil
                 }
             }
         )

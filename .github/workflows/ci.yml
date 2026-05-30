@@ -59,7 +59,13 @@ jobs:
           mkdir -p coverage
           xcrun xccov view --report --json "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.json
           xcrun xccov view --report "$RUNNER_TEMP/SARLogTests.xcresult" > coverage/coverage.txt
-          ruby ci/check_coverage.rb coverage/coverage.json
+          profdata="$(find "$RUNNER_TEMP/DerivedData/Build/ProfileData" -name Coverage.profdata -print -quit)"
+          binary="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/SARLog.app/SARLog.debug.dylib"
+          if [ ! -f "$binary" ]; then
+            binary="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/SARLog.app/SARLog"
+          fi
+          xcrun llvm-cov export -instr-profile "$profdata" "$binary" > coverage/llvm-coverage.json
+          ruby ci/check_coverage.rb coverage/llvm-coverage.json
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

@@ -32,7 +32,7 @@ struct TaskRepository {
         )
 
         context.insert(task)
-        try context.save()
+        try saveOrRollback()
         return task
     }
 
@@ -91,17 +91,17 @@ struct TaskRepository {
             task.notes = notes
         }
 
-        try context.save()
+        try saveOrRollback()
     }
 
     func close(_ task: SARTask, at closedAt: Date = .now) throws {
         task.closedAt = closedAt
-        try context.save()
+        try saveOrRollback()
     }
 
     func reopen(_ task: SARTask) throws {
         task.closedAt = nil
-        try context.save()
+        try saveOrRollback()
     }
 
     func delete(_ task: SARTask) throws {
@@ -109,7 +109,7 @@ struct TaskRepository {
             context.delete(event)
         }
         context.delete(task)
-        try context.save()
+        try saveOrRollback()
     }
 
     @discardableResult
@@ -129,7 +129,7 @@ struct TaskRepository {
         )
 
         context.insert(event)
-        try context.save()
+        try saveOrRollback()
         return event
     }
 
@@ -162,12 +162,12 @@ struct TaskRepository {
             event.timestamp = timestamp
         }
 
-        try context.save()
+        try saveOrRollback()
     }
 
     func deleteTimelineEvent(_ event: TimelineEvent) throws {
         context.delete(event)
-        try context.save()
+        try saveOrRollback()
     }
 
     func timelineEvents(for task: SARTask) throws -> [TimelineEvent] {
@@ -191,6 +191,15 @@ struct TaskRepository {
                 return first.label < second.label
             }
             return first.id.uuidString < second.id.uuidString
+        }
+    }
+
+    private func saveOrRollback() throws {
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
         }
     }
 }

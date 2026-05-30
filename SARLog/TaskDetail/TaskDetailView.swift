@@ -23,8 +23,10 @@ struct TaskDetailView: View {
 
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var editingEvent: TimelineEvent?
-    @State private var pendingDraftEvent: TimelineEvent?
+    @State private var isAddingCustomEvent = false
+    @State private var isConfirmingDelete = false
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -72,20 +74,66 @@ struct TaskDetailContent: View {
         .safeAreaInset(edge: .bottom) {
             bottomActionPanel
         }
-        .sheet(item: $editingEvent, onDismiss: discardEmptyDraft) { event in
+        .sheet(item: $editingEvent) { event in
             TimelineEventEditor(model: model, event: event)
         }
-    }
-
-    private func discardEmptyDraft() {
-        if let pendingDraftEvent {
-            model.discardIfEmpty(pendingDraftEvent)
-            self.pendingDraftEvent = nil
+        .sheet(isPresented: $isAddingCustomEvent) {
+            NewTimelineEventEditor(model: model)
+        }
+        .confirmationDialog(
+            "Delete this task?",
+            isPresented: $isConfirmingDelete,
+            titleVisibility: .visible
+        ) {
+            Button("Delete task", role: .destructive) {
+                if model.deleteTask() {
+                    dismiss()
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently removes the task and its log. This can't be undone.")
+        }
+        .alert("Save problem", isPresented: errorBinding) {
+            Button("OK") {
+                model.errorMessage = nil
+            }
+        } message: {
+            Text(model.errorMessage ?? "Try again before leaving this screen.")
         }
     }
 
     private var bottomActionPanel: some View {
         VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Button {
+                    if model.task.closedAt == nil {
+                        model.closeTask()
+                    } else {
+                        model.reopenTask()
+                    }
+                } label: {
+                    Label(
+                        model.task.closedAt == nil ? "Close task" : "Reopen task",
+                        systemImage: model.task.closedAt == nil ? "checkmark.circle" : "arrow.uturn.backward.circle"
+                    )
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 56)
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityLabel(model.task.closedAt == nil ? "Close task" : "Reopen task")
+
+                Button(role: .destructive) {
+                    isConfirmingDelete = true
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                        .font(.title3.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 56)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Delete task")
+            }
+
             LazyVGrid(columns: eventButtonColumns, spacing: 10) {
                 ForEach(model.predefinedTimelineEvents) { event in
                     Button {
@@ -108,9 +156,7 @@ struct TaskDetailContent: View {
             }
 
             Button {
-                let draft = model.addCustomTimelineEvent()
-                pendingDraftEvent = draft
-                editingEvent = draft
+                isAddingCustomEvent = true
             } label: {
                 Label("Add custom event", systemImage: "plus.circle")
                     .font(.title3.weight(.semibold))
@@ -121,6 +167,17 @@ struct TaskDetailContent: View {
         }
         .padding()
         .background(.bar)
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { model.errorMessage != nil },
+            set: { newValue in
+                if !newValue {
+                    model.errorMessage = nil
+                }
+            }
+        )
     }
 
     private var taskNumber: Binding<String> {
@@ -169,6 +226,85 @@ struct TaskDetailContent: View {
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+}
+
+/// Creates a custom event only after the user enters non-empty text. This keeps
+/// crashes or backgrounding from leaving a blank event in the timeline.
+struct NewTimelineEventEditor: View {
+    @Bindable var model: TaskDetailViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var label = ""
+    @State private var timestamp = Date.now
+    @State private var event: TimelineEvent?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Event") {
+                    TextField("Label", text: labelBinding, axis: .vertical)
+                        .lineLimit(1...3)
+                        .textInputAutocapitalization(.sentences)
+                        .accessibilityLabel("Event label")
+                }
+                Section("Time") {
+                    DatePicker(
+                        "Time",
+                        selection: timestampBinding,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .accessibilityLabel("Event time")
+                }
+            }
+            .navigationTitle("Add event")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var labelBinding: Binding<String> {
+        Binding(
+            get: { label },
+            set: { newValue in
+                label = newValue
+                persistDraft()
+            }
+        )
+    }
+
+    private var timestampBinding: Binding<Date> {
+        Binding(
+            get: { timestamp },
+            set: { newValue in
+                timestamp = newValue
+                if let event {
+                    model.updateTimelineEvent(event, timestamp: newValue)
+                }
+            }
+        )
+    }
+
+    private func persistDraft() {
+        let trimmedLabel = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedLabel.isEmpty {
+            if let event {
+                model.deleteTimelineEvent(event)
+                self.event = nil
+            }
+            return
+        }
+
+        if let event {
+            model.updateTimelineEvent(event, label: label)
+        } else {
+            event = model.addCustomTimelineEvent(label: label, at: timestamp)
+        }
     }
 }
 
