@@ -174,7 +174,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Timeline
 
-- [ ] **PR 6 — Timeline data model + list display**
+- [x] **PR 6 — Timeline data model + list display**
   - `TimelineEvent` entity: id, taskId, label, timestamp, isCustom.
   - Chronological list inside task detail (newest first or oldest
     first — pick one and document in PR description).
