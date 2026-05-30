@@ -162,7 +162,7 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** list reflects state after create / delete / close
     with no manual refresh; deletion confirmation cannot be bypassed.
 
-- [ ] **PR 5 — Task detail: subject + location + notes + Maps link**
+- [x] **PR 5 — Task detail: subject + location + notes + Maps link**
   - Editable fields: taskNumber, subjectName, location (free text),
     scribeName, notes.
   - Per charter §9: tapping a location that looks like coordinates
