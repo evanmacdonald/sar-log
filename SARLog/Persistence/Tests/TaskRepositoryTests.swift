@@ -36,6 +36,7 @@ final class TaskRepositoryTests: XCTestCase {
         let store = try makeRepository()
         let repository = store.repository
         let task = try repository.createTask(subjectName: "Original")
+        try repository.createTimelineEvent(for: task, label: "Callout from ECC")
 
         try repository.update(
             task,
@@ -55,6 +56,7 @@ final class TaskRepositoryTests: XCTestCase {
 
         try repository.delete(updated)
         XCTAssertNil(try repository.task(id: task.id))
+        XCTAssertTrue(try repository.timelineEvents(taskId: task.id).isEmpty)
     }
 
     @MainActor
@@ -133,6 +135,69 @@ final class TaskRepositoryTests: XCTestCase {
 
         XCTAssertEqual(fetched.taskNumber, "Persisted")
         XCTAssertEqual(fetched.subjectName, "Subject")
+    }
+
+    @MainActor
+    func testTimelineEventsFilterByTask() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let firstTask = try repository.createTask(subjectName: "First")
+        let secondTask = try repository.createTask(subjectName: "Second")
+
+        let firstEvent = try repository.createTimelineEvent(
+            for: firstTask,
+            label: "First task event",
+            timestamp: Date(timeIntervalSince1970: 200)
+        )
+        try repository.createTimelineEvent(
+            for: secondTask,
+            label: "Second task event",
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+
+        XCTAssertEqual(try repository.timelineEvents(for: firstTask).map(\.id), [firstEvent.id])
+    }
+
+    @MainActor
+    func testTimelineEventsReturnOldestFirstWithStableTieBreaks() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let sharedTimestamp = Date(timeIntervalSince1970: 300)
+        let oldest = try repository.createTimelineEvent(
+            for: task,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000003")),
+            label: "Arrived staging",
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+        let laterA = try repository.createTimelineEvent(
+            for: task,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000002")),
+            label: "Same label",
+            timestamp: sharedTimestamp
+        )
+        let newest = try repository.createTimelineEvent(
+            for: task,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000001")),
+            label: "Returning to base",
+            timestamp: Date(timeIntervalSince1970: 500)
+        )
+        let laterB = try repository.createTimelineEvent(
+            for: task,
+            id: try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000004")),
+            label: "Same label",
+            timestamp: sharedTimestamp
+        )
+        let middle = try repository.createTimelineEvent(
+            for: task,
+            label: "Left hall",
+            timestamp: Date(timeIntervalSince1970: 200)
+        )
+
+        XCTAssertEqual(
+            try repository.timelineEvents(for: task).map(\.id),
+            [oldest.id, middle.id, laterA.id, laterB.id, newest.id]
+        )
     }
 
     @MainActor

@@ -40,6 +40,17 @@ struct TaskDetailContent: View {
                     .textInputAutocapitalization(.sentences)
                     .accessibilityLabel("Notes")
             }
+            Section("Timeline") {
+                if model.timelineEvents.isEmpty {
+                    Text("No timeline events yet")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                } else {
+                    ForEach(model.timelineEvents) { event in
+                        TimelineEventRow(event: event)
+                    }
+                }
+            }
             Section("Status") {
                 LabeledContent("Created", value: model.task.createdAt.formatted(date: .abbreviated, time: .shortened))
                 LabeledContent("State", value: model.task.closedAt == nil ? "Active" : "Closed")
@@ -109,5 +120,21 @@ struct TaskDetailContent: View {
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+}
+
+struct TimelineEventRow: View {
+    let event: TimelineEvent
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(event.label)
+                .font(.headline)
+            Text(event.timestamp.formatted(date: .abbreviated, time: .shortened))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }

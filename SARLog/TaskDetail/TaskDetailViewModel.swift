@@ -7,10 +7,12 @@ import SwiftData
 final class TaskDetailViewModel {
     private let repository: TaskRepository
     let task: SARTask
+    var timelineEvents: [TimelineEvent] = []
 
     init(task: SARTask, repository: TaskRepository) {
         self.task = task
         self.repository = repository
+        refreshTimeline()
     }
 
     convenience init(task: SARTask, context: ModelContext) {
@@ -19,6 +21,10 @@ final class TaskDetailViewModel {
 
     var mapsURL: URL? {
         CoordinateLocationParser.appleMapsURL(for: task.location)
+    }
+
+    func refreshTimeline() {
+        timelineEvents = (try? repository.timelineEvents(for: task)) ?? []
     }
 
     func updateTaskNumber(_ value: String) {
