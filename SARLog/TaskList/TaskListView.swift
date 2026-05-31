@@ -26,6 +26,7 @@ struct TaskListContent: View {
     @Bindable var model: TaskListViewModel
     @State private var path: [SARTask] = []
     @State private var pendingDeletion: SARTask?
+    @State private var resumeVitalsEntryID: UUID?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -38,7 +39,12 @@ struct TaskListContent: View {
             }
             .navigationTitle("Tasks")
             .navigationDestination(for: SARTask.self) { task in
-                TaskDetailView(task: task)
+                TaskDetailView(
+                    task: task,
+                    initialVitalsEntryID: resumeVitalsEntryID
+                ) {
+                    resumeVitalsEntryID = nil
+                }
             }
             .safeAreaInset(edge: .bottom) {
                 newTaskButton
@@ -65,6 +71,24 @@ struct TaskListContent: View {
                 Button("Cancel", role: .cancel) {}
             } message: { _ in
                 Text("This permanently removes the task and its log. This can't be undone.")
+            }
+            .alert(
+                "Resume vitals entry?",
+                isPresented: vitalsRecoveryBinding,
+                presenting: model.pendingVitalsDraft
+            ) { draft in
+                Button("Resume") {
+                    resumeVitalsEntryID = draft.entry.id
+                    if !path.contains(where: { $0.id == draft.task.id }) {
+                        path.append(draft.task)
+                    }
+                    _ = model.resumePendingVitalsDraft()
+                }
+                Button("Discard", role: .destructive) {
+                    model.discardPendingVitalsDraft()
+                }
+            } message: { draft in
+                Text("SAR Log stopped while a vitals entry was open for \(draft.taskTitle). Resume it or discard the in-progress entry.")
             }
         }
     }
@@ -154,6 +178,17 @@ struct TaskListContent: View {
             set: { newValue in
                 if !newValue {
                     model.errorMessage = nil
+                }
+            }
+        )
+    }
+
+    private var vitalsRecoveryBinding: Binding<Bool> {
+        Binding(
+            get: { model.pendingVitalsDraft != nil },
+            set: { newValue in
+                if !newValue {
+                    _ = model.resumePendingVitalsDraft()
                 }
             }
         )

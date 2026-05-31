@@ -74,6 +74,49 @@ final class TaskListViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testRecoverableVitalsDraftIsSurfacedOnLaunch() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask(subjectName: "Taylor")
+        let draft = try repository.createVitalsEntry(for: task, isDraft: true)
+
+        let model = TaskListViewModel(repository: repository)
+
+        XCTAssertEqual(model.pendingVitalsDraft?.entry.id, draft.id)
+        XCTAssertEqual(model.pendingVitalsDraft?.task.id, task.id)
+        XCTAssertEqual(model.pendingVitalsDraft?.taskTitle, "Taylor")
+    }
+
+    @MainActor
+    func testResumePendingVitalsDraftClearsPromptButLeavesEntryRecoverable() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let draft = try repository.createVitalsEntry(for: task, isDraft: true)
+        let model = TaskListViewModel(repository: repository)
+
+        let recovery = try XCTUnwrap(model.resumePendingVitalsDraft())
+
+        XCTAssertEqual(recovery.entry.id, draft.id)
+        XCTAssertNil(model.pendingVitalsDraft)
+        XCTAssertEqual(try repository.draftVitalsEntries().map(\.id), [draft.id])
+    }
+
+    @MainActor
+    func testDiscardPendingVitalsDraftDeletesEntry() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let draft = try repository.createVitalsEntry(for: task, isDraft: true)
+        let model = TaskListViewModel(repository: repository)
+
+        model.discardPendingVitalsDraft()
+
+        XCTAssertNil(try repository.vitalsEntry(id: draft.id))
+        XCTAssertNil(model.pendingVitalsDraft)
+    }
+
+    @MainActor
     private func makeStore() throws -> ModelStore {
         let container = try SARLogModelContainer.inMemory()
         return ModelStore(

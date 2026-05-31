@@ -6,6 +6,7 @@ final class VitalsEntry {
     @Attribute(.unique) var id: UUID
     var taskId: UUID
     var timestamp: Date
+    var isDraft: Bool = false
     var heartRate: Int?
     var systolicBloodPressure: Int?
     var diastolicBloodPressure: Int?
@@ -30,6 +31,7 @@ final class VitalsEntry {
         id: UUID = UUID(),
         taskId: UUID,
         timestamp: Date = .now,
+        isDraft: Bool = false,
         heartRate: Int? = nil,
         systolicBloodPressure: Int? = nil,
         diastolicBloodPressure: Int? = nil,
@@ -53,6 +55,7 @@ final class VitalsEntry {
         self.id = id
         self.taskId = taskId
         self.timestamp = timestamp
+        self.isDraft = isDraft
         self.heartRate = heartRate
         self.systolicBloodPressure = systolicBloodPressure
         self.diastolicBloodPressure = diastolicBloodPressure
