@@ -242,7 +242,7 @@ Do not implement these in any PR. From charter §9:
 
 ### Resilience
 
-- [ ] **PR 12 — Auto-save + crash recovery + iCloud backup**
+- [x] **PR 12 — Auto-save + crash recovery + iCloud backup**
   - Verify SwiftData writes flush on every mutation (no buffered
     "Save" semantics anywhere).
   - On launch, detect incomplete mid-write state (e.g. a half-filled

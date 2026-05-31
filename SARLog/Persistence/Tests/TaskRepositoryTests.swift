@@ -298,6 +298,37 @@ final class TaskRepositoryTests: XCTestCase {
         XCTAssertNil(fetched.skinTemperature)
         XCTAssertNil(fetched.skinMoisture)
         XCTAssertNil(fetched.levelOfConsciousness)
+        XCTAssertFalse(fetched.isDraft)
+    }
+
+    @MainActor
+    func testDraftVitalsEntriesCanBeRecoveredFinalizedAndDiscarded() throws {
+        let store = try makeRepository()
+        let repository = store.repository
+        let task = try repository.createTask()
+        let completed = try repository.createVitalsEntry(
+            for: task,
+            timestamp: Date(timeIntervalSince1970: 100)
+        )
+        let draft = try repository.createVitalsEntry(
+            for: task,
+            timestamp: Date(timeIntervalSince1970: 200),
+            isDraft: true
+        )
+
+        XCTAssertEqual(try repository.draftVitalsEntries().map(\.id), [draft.id])
+        XCTAssertFalse(completed.isDraft)
+        XCTAssertTrue(draft.isDraft)
+
+        try repository.finalizeVitalsEntry(draft)
+
+        XCTAssertFalse(draft.isDraft)
+        XCTAssertTrue(try repository.draftVitalsEntries().isEmpty)
+
+        let discardable = try repository.createVitalsEntry(for: task, isDraft: true)
+        try repository.deleteVitalsEntry(discardable)
+
+        XCTAssertNil(try repository.vitalsEntry(id: discardable.id))
     }
 
     @MainActor
@@ -343,6 +374,24 @@ final class TaskRepositoryTests: XCTestCase {
         try repository.updateVitalsEntryHeartRate(entry, heartRate: nil)
 
         XCTAssertNil(try repository.vitalsEntries(for: task).first?.heartRate)
+    }
+
+    @MainActor
+    func testPersistentStoreIsIncludedInDeviceBackups() throws {
+        let storeDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SARLogBackup-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: storeDirectory)
+        }
+
+        let storeURL = storeDirectory.appendingPathComponent(SARLogModelContainer.storeFileName)
+        let container = try SARLogModelContainer.persistent(at: storeURL)
+        let repository = TaskRepository(context: container.mainContext)
+        try repository.createTask()
+
+        XCTAssertTrue(try BackupEligibility.isIncludedInBackup(storeDirectory))
+        XCTAssertTrue(try BackupEligibility.isIncludedInBackup(storeURL))
     }
 
     @MainActor

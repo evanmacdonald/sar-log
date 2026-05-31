@@ -179,6 +179,7 @@ final class TaskDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(entry.taskId, task.id)
         XCTAssertEqual(entry.timestamp, timestamp)
+        XCTAssertTrue(entry.isDraft)
         XCTAssertNil(entry.heartRate)
         XCTAssertEqual(model.vitalsEntries.map(\.id), [entry.id])
         XCTAssertEqual(try repository.vitalsEntries(for: task).map(\.id), [entry.id])
@@ -258,8 +259,10 @@ final class TaskDetailViewModelTests: XCTestCase {
         let model = TaskDetailViewModel(task: task, repository: repository)
         let first = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
         model.updateVitalsEntry(first, set: \.heartRate, to: 72)
+        model.finishVitalsEntry(first)
         let second = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
         model.updateVitalsEntry(second, set: \.heartRate, to: 80)
+        model.finishVitalsEntry(second)
         let third = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
 
         XCTAssertNil(model.previousVitalsEntry(before: first))
@@ -275,8 +278,10 @@ final class TaskDetailViewModelTests: XCTestCase {
         let model = TaskDetailViewModel(task: task, repository: repository)
         let withData = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
         model.updateVitalsEntry(withData, set: \.heartRate, to: 72)
+        model.finishVitalsEntry(withData)
         // An accidental blank row recorded between the real reading and the new one.
-        try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        let blank = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        model.finishVitalsEntry(blank)
         let newest = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
 
         // The blank predecessor is skipped in favour of the last reading with data.
@@ -304,6 +309,7 @@ final class TaskDetailViewModelTests: XCTestCase {
         let source = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
         model.updateVitalsEntry(source, set: \.heartRate, to: 72)
         model.updateVitalsEntry(source, set: \.painScore, to: 4)
+        model.finishVitalsEntry(source)
 
         let target = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
         model.updateVitalsEntry(target, set: \.heartRate, to: 90)
@@ -315,6 +321,54 @@ final class TaskDetailViewModelTests: XCTestCase {
         XCTAssertEqual(fetched.heartRate, 90, "Entered value is preserved")
         XCTAssertEqual(fetched.painScore, 4, "Empty field is prefilled from previous")
         XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testDraftVitalsEntryIsFinishedOnDonePath() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let entry = try XCTUnwrap(model.addVitalsEntry())
+
+        XCTAssertTrue(entry.isDraft)
+        XCTAssertTrue(model.finishVitalsEntry(entry))
+
+        let fetched = try XCTUnwrap(repository.vitalsEntry(id: entry.id))
+        XCTAssertFalse(fetched.isDraft)
+        XCTAssertTrue(try repository.draftVitalsEntries().isEmpty)
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testDraftVitalsEntryCanBeDiscarded() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let entry = try XCTUnwrap(model.addVitalsEntry())
+
+        XCTAssertTrue(model.discardVitalsEntry(entry))
+
+        XCTAssertNil(try repository.vitalsEntry(id: entry.id))
+        XCTAssertTrue(model.vitalsEntries.isEmpty)
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testPreviousVitalsEntryIgnoresUnfinishedDrafts() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let completed = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.updateVitalsEntry(completed, set: \.heartRate, to: 72)
+        model.finishVitalsEntry(completed)
+        let draft = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
+        model.updateVitalsEntry(draft, set: \.heartRate, to: 90)
+        let newest = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 300)))
+
+        XCTAssertEqual(model.previousVitalsEntry(before: newest)?.id, completed.id)
     }
 
     @MainActor

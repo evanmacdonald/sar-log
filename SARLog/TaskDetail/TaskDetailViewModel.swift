@@ -83,7 +83,16 @@ final class TaskDetailViewModel {
     @discardableResult
     func addVitalsEntry(at timestamp: Date = .now) -> VitalsEntry? {
         performMutation {
-            try repository.createVitalsEntry(for: task, timestamp: timestamp)
+            try repository.createVitalsEntry(for: task, timestamp: timestamp, isDraft: true)
+        }
+    }
+
+    func vitalsEntry(id: UUID) -> VitalsEntry? {
+        do {
+            return try repository.vitalsEntry(id: id)
+        } catch {
+            errorMessage = "Vitals entry could not be loaded."
+            return nil
         }
     }
 
@@ -109,17 +118,16 @@ final class TaskDetailViewModel {
         }
     }
 
-    /// The most recent reading before `entry` (chronologically) that actually
-    /// has clinical data, or `nil` if there isn't one. Blank entries are
-    /// skipped so an accidental empty row doesn't become a do-nothing prefill
-    /// source and hide the real previous reading. Drives the opt-in prefill
-    /// suggestions, and is recomputed on demand so backdating `entry` picks the
-    /// correct predecessor.
+    /// The most recent finished reading before `entry` (chronologically) that
+    /// actually has clinical data, or `nil` if there isn't one. Blank entries
+    /// are skipped so an accidental empty row doesn't become a do-nothing
+    /// prefill source, and drafts are skipped so an in-progress reading doesn't
+    /// become a prefill source before the scribe taps Done.
     func previousVitalsEntry(before entry: VitalsEntry) -> VitalsEntry? {
         guard let index = vitalsEntries.firstIndex(where: { $0.id == entry.id }) else {
             return nil
         }
-        return vitalsEntries[..<index].last { $0.hasClinicalData }
+        return vitalsEntries[..<index].last { !$0.isDraft && $0.hasClinicalData }
     }
 
     /// Carry the previous reading's values into `entry` for every field the
@@ -128,6 +136,34 @@ final class TaskDetailViewModel {
     func applyPrefill(to entry: VitalsEntry, from source: VitalsEntry) {
         performMutation {
             try repository.prefillVitalsEntry(entry, from: source)
+        }
+    }
+
+    @discardableResult
+    func finishVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        do {
+            try repository.finalizeVitalsEntry(entry)
+            refreshLogEntries()
+            errorMessage = nil
+            return true
+        } catch {
+            refreshLogEntries()
+            errorMessage = "Vitals entry could not be saved. Try again before leaving this screen."
+            return false
+        }
+    }
+
+    @discardableResult
+    func discardVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        do {
+            try repository.deleteVitalsEntry(entry)
+            refreshLogEntries()
+            errorMessage = nil
+            return true
+        } catch {
+            refreshLogEntries()
+            errorMessage = "Vitals entry could not be discarded. Try again before leaving this screen."
+            return false
         }
     }
 

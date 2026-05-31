@@ -2,13 +2,19 @@ import SwiftUI
 
 struct TaskDetailView: View {
     let task: SARTask
+    var initialVitalsEntryID: UUID?
+    var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     @State private var model: TaskDetailViewModel?
 
     var body: some View {
         Group {
             if let model {
-                TaskDetailContent(model: model)
+                TaskDetailContent(
+                    model: model,
+                    initialVitalsEntryID: initialVitalsEntryID,
+                    onInitialVitalsEntryPresented: onInitialVitalsEntryPresented
+                )
             } else {
                 ProgressView()
             }
@@ -23,11 +29,14 @@ struct TaskDetailView: View {
 
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
+    var initialVitalsEntryID: UUID?
+    var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
     @State private var editingEvent: TimelineEvent?
     @State private var editingVitalsEntry: VitalsEntry?
     @State private var isAddingCustomEvent = false
     @State private var isConfirmingDelete = false
+    @State private var didPresentInitialVitalsEntry = false
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -96,6 +105,9 @@ struct TaskDetailContent: View {
         }
         .safeAreaInset(edge: .bottom) {
             bottomActionPanel
+        }
+        .onAppear {
+            presentInitialVitalsEntryIfNeeded()
         }
         .sheet(item: $editingEvent) { event in
             TimelineEventEditor(model: model, event: event)
@@ -215,6 +227,17 @@ struct TaskDetailContent: View {
         }
     }
 
+    private func presentInitialVitalsEntryIfNeeded() {
+        guard !didPresentInitialVitalsEntry,
+              let initialVitalsEntryID,
+              let entry = model.vitalsEntry(id: initialVitalsEntryID)
+        else { return }
+
+        editingVitalsEntry = entry
+        didPresentInitialVitalsEntry = true
+        onInitialVitalsEntryPresented()
+    }
+
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { model.errorMessage != nil },
@@ -292,6 +315,10 @@ struct VitalsEntryRow: View {
 
     /// Compact one-line digest of the entered vitals, skipping empty fields.
     private var summary: String {
+        if entry.isDraft {
+            return "In progress - tap to resume"
+        }
+
         var parts: [String] = []
         if let hr = entry.heartRate { parts.append("HR \(hr)") }
         if let systolic = entry.systolicBloodPressure, let diastolic = entry.diastolicBloodPressure {
@@ -466,16 +493,33 @@ struct VitalsEntryEditor: View {
                     optionRow("Temperature", \.skinTemperature, options: VitalsFieldOptions.skinTemperature)
                     optionRow("Moisture", \.skinMoisture, options: VitalsFieldOptions.skinMoisture)
                 }
+
+                if entry.isDraft {
+                    Section {
+                        Button(role: .destructive) {
+                            if model.discardVitalsEntry(entry) {
+                                dismiss()
+                            }
+                        } label: {
+                            Label("Discard in-progress entry", systemImage: "trash")
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .accessibilityLabel("Discard in-progress vitals entry")
+                    }
+                }
             }
             .navigationTitle("Vitals")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        dismiss()
+                        if model.finishVitalsEntry(entry) {
+                            dismiss()
+                        }
                     }
                 }
             }
+            .interactiveDismissDisabled(entry.isDraft)
             .task {
                 if !prefillConfigured {
                     startedBlank = !entry.hasClinicalData

@@ -189,12 +189,14 @@ struct TaskRepository {
     func createVitalsEntry(
         id: UUID = UUID(),
         taskId: UUID,
-        timestamp: Date = .now
+        timestamp: Date = .now,
+        isDraft: Bool = false
     ) throws -> VitalsEntry {
         let entry = VitalsEntry(
             id: id,
             taskId: taskId,
-            timestamp: timestamp
+            timestamp: timestamp,
+            isDraft: isDraft
         )
 
         context.insert(entry)
@@ -206,13 +208,22 @@ struct TaskRepository {
     func createVitalsEntry(
         for task: SARTask,
         id: UUID = UUID(),
-        timestamp: Date = .now
+        timestamp: Date = .now,
+        isDraft: Bool = false
     ) throws -> VitalsEntry {
         try createVitalsEntry(
             id: id,
             taskId: task.id,
-            timestamp: timestamp
+            timestamp: timestamp,
+            isDraft: isDraft
         )
+    }
+
+    func vitalsEntry(id: UUID) throws -> VitalsEntry? {
+        let descriptor = FetchDescriptor<VitalsEntry>(
+            predicate: #Predicate { $0.id == id }
+        )
+        return try context.fetch(descriptor).first
     }
 
     func updateVitalsEntryTimestamp(_ entry: VitalsEntry, timestamp: Date) throws {
@@ -233,6 +244,16 @@ struct TaskRepository {
         to value: Value
     ) throws {
         entry[keyPath: keyPath] = value
+        try saveOrRollback()
+    }
+
+    func finalizeVitalsEntry(_ entry: VitalsEntry) throws {
+        entry.isDraft = false
+        try saveOrRollback()
+    }
+
+    func deleteVitalsEntry(_ entry: VitalsEntry) throws {
+        context.delete(entry)
         try saveOrRollback()
     }
 
@@ -278,6 +299,14 @@ struct TaskRepository {
     func vitalsEntries(taskId: UUID) throws -> [VitalsEntry] {
         var descriptor = FetchDescriptor<VitalsEntry>(
             predicate: #Predicate { $0.taskId == taskId }
+        )
+        descriptor.includePendingChanges = true
+        return sortVitalsEntries(try context.fetch(descriptor))
+    }
+
+    func draftVitalsEntries() throws -> [VitalsEntry] {
+        var descriptor = FetchDescriptor<VitalsEntry>(
+            predicate: #Predicate { $0.isDraft }
         )
         descriptor.includePendingChanges = true
         return sortVitalsEntries(try context.fetch(descriptor))

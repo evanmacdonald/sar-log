@@ -9,6 +9,7 @@ final class TaskListViewModel {
 
     private(set) var activeTasks: [SARTask] = []
     private(set) var closedTasks: [SARTask] = []
+    var pendingVitalsDraft: VitalsDraftRecovery?
     var errorMessage: String?
 
     init(repository: TaskRepository) {
@@ -28,10 +29,12 @@ final class TaskListViewModel {
         do {
             activeTasks = try repository.activeTasks()
             closedTasks = try repository.closedTasks()
+            pendingVitalsDraft = try recoverableVitalsDraft()
             errorMessage = nil
         } catch {
             activeTasks = []
             closedTasks = []
+            pendingVitalsDraft = nil
             errorMessage = "Task list could not be loaded."
         }
     }
@@ -61,6 +64,30 @@ final class TaskListViewModel {
         }
     }
 
+    func resumePendingVitalsDraft() -> VitalsDraftRecovery? {
+        let draft = pendingVitalsDraft
+        pendingVitalsDraft = nil
+        return draft
+    }
+
+    func discardPendingVitalsDraft() {
+        guard let draft = pendingVitalsDraft else { return }
+        performMutation {
+            try repository.deleteVitalsEntry(draft.entry)
+        }
+    }
+
+    private func recoverableVitalsDraft() throws -> VitalsDraftRecovery? {
+        let drafts = try repository.draftVitalsEntries().reversed()
+        for entry in drafts {
+            if let task = try repository.task(id: entry.taskId) {
+                return VitalsDraftRecovery(task: task, entry: entry)
+            }
+            try repository.deleteVitalsEntry(entry)
+        }
+        return nil
+    }
+
     @discardableResult
     private func performMutation<Result>(_ operation: () throws -> Result) -> Result? {
         do {
@@ -73,5 +100,15 @@ final class TaskListViewModel {
             errorMessage = "Change could not be saved. Try again before leaving this screen."
             return nil
         }
+    }
+}
+
+struct VitalsDraftRecovery: Identifiable {
+    var id: UUID { entry.id }
+    let task: SARTask
+    let entry: VitalsEntry
+
+    var taskTitle: String {
+        TaskRowPresentation.title(taskNumber: task.taskNumber, subjectName: task.subjectName)
     }
 }
