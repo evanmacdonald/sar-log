@@ -32,11 +32,18 @@ struct TaskDetailContent: View {
     var initialVitalsEntryID: UUID?
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
+    @SceneStorage("TaskDetail.focusedField") private var focusedFieldRawValue = ""
+    @SceneStorage("TaskDetail.editingEventID") private var editingEventIDString = ""
+    @SceneStorage("TaskDetail.editingVitalsEntryID") private var editingVitalsEntryIDString = ""
+    @SceneStorage("TaskDetail.isAddingCustomEvent") private var isAddingCustomEventStored = false
+    @SceneStorage("TaskDetail.customEventID") private var customEventIDString = ""
+    @FocusState private var focusedField: TaskDetailFocusField?
     @State private var editingEvent: TimelineEvent?
     @State private var editingVitalsEntry: VitalsEntry?
     @State private var isAddingCustomEvent = false
     @State private var isConfirmingDelete = false
     @State private var didPresentInitialVitalsEntry = false
+    @State private var didRestoreEditor = false
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -45,16 +52,17 @@ struct TaskDetailContent: View {
     var body: some View {
         List {
             Section("Task") {
-                detailTextField("Task #", text: taskNumber)
-                detailTextField("Subject", text: subjectName)
-                detailTextField("Location", text: location)
-                detailTextField("Scribe", text: scribeName)
+                detailTextField("Task #", text: taskNumber, field: .taskNumber)
+                detailTextField("Subject", text: subjectName, field: .subjectName)
+                detailTextField("Location", text: location, field: .location)
+                detailTextField("Scribe", text: scribeName, field: .scribeName)
             }
             Section("Notes") {
                 TextField("Notes", text: notes, axis: .vertical)
                     .lineLimit(6...12)
                     .frame(minHeight: 144, alignment: .top)
                     .textInputAutocapitalization(.sentences)
+                    .focused($focusedField, equals: .notes)
                     .accessibilityLabel("Notes")
             }
             Section("Timeline") {
@@ -65,7 +73,7 @@ struct TaskDetailContent: View {
                 } else {
                     ForEach(model.timelineEvents) { event in
                         Button {
-                            editingEvent = event
+                            editingEventSheet.wrappedValue = event
                         } label: {
                             TimelineEventRow(event: event)
                         }
@@ -82,7 +90,7 @@ struct TaskDetailContent: View {
                 } else {
                     ForEach(model.vitalsEntries) { entry in
                         Button {
-                            editingVitalsEntry = entry
+                            editingVitalsEntrySheet.wrappedValue = entry
                         } label: {
                             VitalsEntryRow(entry: entry)
                         }
@@ -108,14 +116,28 @@ struct TaskDetailContent: View {
         }
         .onAppear {
             presentInitialVitalsEntryIfNeeded()
+            restoreFocusedFieldIfNeeded()
+            restoreActiveEditorIfNeeded()
         }
-        .sheet(item: $editingEvent) { event in
+        .onChange(of: initialVitalsEntryID) { _, _ in
+            didPresentInitialVitalsEntry = false
+            presentInitialVitalsEntryIfNeeded()
+        }
+        .onChange(of: focusedField) { _, newValue in
+            focusedFieldRawValue = TaskDetailFocusField.storageValue(for: newValue)
+        }
+        .sheet(item: editingEventSheet) { event in
             TimelineEventEditor(model: model, event: event)
         }
-        .sheet(isPresented: $isAddingCustomEvent) {
-            NewTimelineEventEditor(model: model)
+        .sheet(isPresented: customEventSheet) {
+            NewTimelineEventEditor(
+                model: model,
+                initialEventID: TaskDetailSceneRestoration.id(from: customEventIDString)
+            ) { event in
+                customEventIDString = TaskDetailSceneRestoration.storageValue(for: event?.id)
+            }
         }
-        .sheet(item: $editingVitalsEntry) { entry in
+        .sheet(item: editingVitalsEntrySheet) { entry in
             VitalsEntryEditor(model: model, entry: entry)
         }
         .confirmationDialog(
@@ -189,7 +211,8 @@ struct TaskDetailContent: View {
 
             HStack(spacing: 10) {
                 Button {
-                    isAddingCustomEvent = true
+                    customEventIDString = ""
+                    customEventSheet.wrappedValue = true
                 } label: {
                     Label("Custom event", systemImage: "plus.circle")
                         .font(.headline.weight(.semibold))
@@ -202,7 +225,7 @@ struct TaskDetailContent: View {
 
                 Button {
                     if let entry = model.addVitalsEntry() {
-                        editingVitalsEntry = entry
+                        editingVitalsEntrySheet.wrappedValue = entry
                     }
                 } label: {
                     Label("Add vitals", systemImage: "waveform.path.ecg")
@@ -233,9 +256,38 @@ struct TaskDetailContent: View {
               let entry = model.vitalsEntry(id: initialVitalsEntryID)
         else { return }
 
-        editingVitalsEntry = entry
+        editingVitalsEntrySheet.wrappedValue = entry
         didPresentInitialVitalsEntry = true
         onInitialVitalsEntryPresented()
+    }
+
+    private func restoreFocusedFieldIfNeeded() {
+        guard focusedField == nil,
+              let restoredField = TaskDetailFocusField.field(from: focusedFieldRawValue)
+        else { return }
+
+        focusedField = restoredField
+    }
+
+    private func restoreActiveEditorIfNeeded() {
+        guard !didRestoreEditor else { return }
+        didRestoreEditor = true
+
+        if let eventID = TaskDetailSceneRestoration.id(from: editingEventIDString),
+           let event = model.timelineEvent(id: eventID) {
+            editingEventSheet.wrappedValue = event
+            return
+        }
+
+        if let entryID = TaskDetailSceneRestoration.id(from: editingVitalsEntryIDString),
+           let entry = model.vitalsEntry(id: entryID) {
+            editingVitalsEntrySheet.wrappedValue = entry
+            return
+        }
+
+        if isAddingCustomEventStored {
+            customEventSheet.wrappedValue = true
+        }
     }
 
     private var errorBinding: Binding<Bool> {
@@ -244,6 +296,58 @@ struct TaskDetailContent: View {
             set: { newValue in
                 if !newValue {
                     model.errorMessage = nil
+                }
+            }
+        )
+    }
+
+    private var editingEventSheet: Binding<TimelineEvent?> {
+        Binding(
+            get: { editingEvent },
+            set: { event in
+                editingEvent = event
+                editingEventIDString = TaskDetailSceneRestoration.storageValue(for: event?.id)
+                if event != nil {
+                    editingVitalsEntry = nil
+                    editingVitalsEntryIDString = ""
+                    isAddingCustomEvent = false
+                    isAddingCustomEventStored = false
+                    customEventIDString = ""
+                }
+            }
+        )
+    }
+
+    private var editingVitalsEntrySheet: Binding<VitalsEntry?> {
+        Binding(
+            get: { editingVitalsEntry },
+            set: { entry in
+                editingVitalsEntry = entry
+                editingVitalsEntryIDString = TaskDetailSceneRestoration.storageValue(for: entry?.id)
+                if entry != nil {
+                    editingEvent = nil
+                    editingEventIDString = ""
+                    isAddingCustomEvent = false
+                    isAddingCustomEventStored = false
+                    customEventIDString = ""
+                }
+            }
+        )
+    }
+
+    private var customEventSheet: Binding<Bool> {
+        Binding(
+            get: { isAddingCustomEvent },
+            set: { isPresented in
+                isAddingCustomEvent = isPresented
+                isAddingCustomEventStored = isPresented
+                if isPresented {
+                    editingEvent = nil
+                    editingEventIDString = ""
+                    editingVitalsEntry = nil
+                    editingVitalsEntryIDString = ""
+                } else {
+                    customEventIDString = ""
                 }
             }
         )
@@ -284,7 +388,11 @@ struct TaskDetailContent: View {
         )
     }
 
-    private func detailTextField(_ title: String, text: Binding<String>) -> some View {
+    private func detailTextField(
+        _ title: String,
+        text: Binding<String>,
+        field: TaskDetailFocusField
+    ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption.weight(.semibold))
@@ -292,9 +400,36 @@ struct TaskDetailContent: View {
             TextField(title, text: text)
                 .font(.body)
                 .textInputAutocapitalization(.words)
+                .focused($focusedField, equals: field)
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+}
+
+enum TaskDetailSceneRestoration {
+    static func id(from storageValue: String) -> UUID? {
+        UUID(uuidString: storageValue)
+    }
+
+    static func storageValue(for id: UUID?) -> String {
+        id?.uuidString ?? ""
+    }
+}
+
+enum TaskDetailFocusField: String, Hashable {
+    case taskNumber
+    case subjectName
+    case location
+    case scribeName
+    case notes
+
+    static func field(from storageValue: String) -> TaskDetailFocusField? {
+        TaskDetailFocusField(rawValue: storageValue)
+    }
+
+    static func storageValue(for field: TaskDetailFocusField?) -> String {
+        field?.rawValue ?? ""
     }
 }
 
@@ -336,10 +471,13 @@ struct VitalsEntryRow: View {
 /// crashes or backgrounding from leaving a blank event in the timeline.
 struct NewTimelineEventEditor: View {
     @Bindable var model: TaskDetailViewModel
+    var initialEventID: UUID?
+    var onEventChanged: (TimelineEvent?) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
     @State private var label = ""
     @State private var timestamp = Date.now
     @State private var event: TimelineEvent?
+    @State private var didLoadInitialEvent = false
 
     var body: some View {
         NavigationStack {
@@ -368,6 +506,9 @@ struct NewTimelineEventEditor: View {
                     }
                 }
             }
+        }
+        .task {
+            loadInitialEventIfNeeded()
         }
     }
 
@@ -399,6 +540,7 @@ struct NewTimelineEventEditor: View {
             if let event {
                 model.deleteTimelineEvent(event)
                 self.event = nil
+                onEventChanged(nil)
             }
             return
         }
@@ -407,7 +549,22 @@ struct NewTimelineEventEditor: View {
             model.updateTimelineEvent(event, label: label)
         } else {
             event = model.addCustomTimelineEvent(label: label, at: timestamp)
+            onEventChanged(event)
         }
+    }
+
+    private func loadInitialEventIfNeeded() {
+        guard !didLoadInitialEvent else { return }
+        didLoadInitialEvent = true
+
+        guard let initialEventID,
+              let restoredEvent = model.timelineEvent(id: initialEventID)
+        else { return }
+
+        event = restoredEvent
+        label = restoredEvent.label
+        timestamp = restoredEvent.timestamp
+        onEventChanged(restoredEvent)
     }
 }
 

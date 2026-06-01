@@ -64,6 +64,15 @@ final class TaskListViewModel {
         }
     }
 
+    func task(id: UUID) -> SARTask? {
+        do {
+            return try repository.task(id: id)
+        } catch {
+            errorMessage = "Task could not be restored."
+            return nil
+        }
+    }
+
     func resumePendingVitalsDraft() -> VitalsDraftRecovery? {
         let draft = pendingVitalsDraft
         pendingVitalsDraft = nil
@@ -110,5 +119,15 @@ struct VitalsDraftRecovery: Identifiable {
 
     var taskTitle: String {
         TaskRowPresentation.title(taskNumber: task.taskNumber, subjectName: task.subjectName)
+    }
+}
+
+enum TaskSceneRestoration {
+    static func taskID(from storageValue: String) -> UUID? {
+        UUID(uuidString: storageValue)
+    }
+
+    static func storageValue(for task: SARTask?) -> String {
+        task?.id.uuidString ?? ""
     }
 }

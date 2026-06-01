@@ -123,6 +123,18 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testTimelineEventLookupFindsPersistedEventByID() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let event = try XCTUnwrap(model.addCustomTimelineEvent(label: "Subject located"))
+
+        XCTAssertEqual(model.timelineEvent(id: event.id)?.id, event.id)
+        XCTAssertNil(model.timelineEvent(id: UUID()))
+    }
+
+    @MainActor
     func testEditingTimelineEventLabelPersistsImmediately() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)

@@ -24,12 +24,14 @@ struct TaskListView: View {
 
 struct TaskListContent: View {
     @Bindable var model: TaskListViewModel
+    @SceneStorage("TaskList.selectedTaskID") private var selectedTaskIDString = ""
     @State private var path: [SARTask] = []
     @State private var pendingDeletion: SARTask?
     @State private var resumeVitalsEntryID: UUID?
+    @State private var didRestorePath = false
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: navigationPath) {
             Group {
                 if model.isEmpty {
                     emptyState
@@ -51,6 +53,7 @@ struct TaskListContent: View {
             }
             .onAppear {
                 model.refresh()
+                restoreNavigationPathIfNeeded()
             }
             .alert("Save problem", isPresented: errorBinding) {
                 Button("OK") {
@@ -80,7 +83,7 @@ struct TaskListContent: View {
                 Button("Resume") {
                     resumeVitalsEntryID = draft.entry.id
                     if !path.contains(where: { $0.id == draft.task.id }) {
-                        path.append(draft.task)
+                        navigationPath.wrappedValue.append(draft.task)
                     }
                     _ = model.resumePendingVitalsDraft()
                 }
@@ -91,6 +94,31 @@ struct TaskListContent: View {
                 Text("SAR Log stopped while a vitals entry was open for \(draft.taskTitle). Resume it or discard the in-progress entry.")
             }
         }
+    }
+
+    private var navigationPath: Binding<[SARTask]> {
+        Binding(
+            get: { path },
+            set: { newValue in
+                path = newValue
+                selectedTaskIDString = TaskSceneRestoration.storageValue(for: newValue.last)
+            }
+        )
+    }
+
+    private func restoreNavigationPathIfNeeded() {
+        guard !didRestorePath else { return }
+        didRestorePath = true
+
+        guard path.isEmpty,
+              let taskID = TaskSceneRestoration.taskID(from: selectedTaskIDString),
+              let restoredTask = model.task(id: taskID)
+        else {
+            selectedTaskIDString = ""
+            return
+        }
+
+        path = [restoredTask]
     }
 
     private var taskList: some View {
@@ -149,7 +177,7 @@ struct TaskListContent: View {
     private var newTaskButton: some View {
         Button {
             if let task = model.createTask() {
-                path.append(task)
+                navigationPath.wrappedValue.append(task)
             }
         } label: {
             Label("New task", systemImage: "plus.circle.fill")
