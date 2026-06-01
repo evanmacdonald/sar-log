@@ -42,6 +42,7 @@ struct TaskDetailContent: View {
     @State private var editingVitalsEntry: VitalsEntry?
     @State private var isAddingCustomEvent = false
     @State private var isConfirmingDelete = false
+    @State private var pdfShareItem: PDFShareItem?
     @State private var didPresentInitialVitalsEntry = false
     @State private var didRestoreEditor = false
     private let eventButtonColumns = [
@@ -140,6 +141,9 @@ struct TaskDetailContent: View {
         .sheet(item: editingVitalsEntrySheet) { entry in
             VitalsEntryEditor(model: model, entry: entry)
         }
+        .sheet(item: $pdfShareItem) { item in
+            PDFShareSheet(url: item.url)
+        }
         .confirmationDialog(
             "Delete this task?",
             isPresented: $isConfirmingDelete,
@@ -165,6 +169,14 @@ struct TaskDetailContent: View {
 
     private var taskActionsMenu: some View {
         Menu {
+            Button {
+                if let url = model.exportPDF() {
+                    pdfShareItem = PDFShareItem(url: url)
+                }
+            } label: {
+                Label("Export PDF", systemImage: "square.and.arrow.up")
+            }
+
             Button {
                 toggleTaskClosedState()
             } label: {
