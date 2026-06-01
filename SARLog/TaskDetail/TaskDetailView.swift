@@ -32,6 +32,8 @@ struct TaskDetailContent: View {
     var initialVitalsEntryID: UUID?
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
+    @SceneStorage("TaskDetail.focusedField") private var focusedFieldRawValue = ""
+    @FocusState private var focusedField: TaskDetailFocusField?
     @State private var editingEvent: TimelineEvent?
     @State private var editingVitalsEntry: VitalsEntry?
     @State private var isAddingCustomEvent = false
@@ -45,16 +47,17 @@ struct TaskDetailContent: View {
     var body: some View {
         List {
             Section("Task") {
-                detailTextField("Task #", text: taskNumber)
-                detailTextField("Subject", text: subjectName)
-                detailTextField("Location", text: location)
-                detailTextField("Scribe", text: scribeName)
+                detailTextField("Task #", text: taskNumber, field: .taskNumber)
+                detailTextField("Subject", text: subjectName, field: .subjectName)
+                detailTextField("Location", text: location, field: .location)
+                detailTextField("Scribe", text: scribeName, field: .scribeName)
             }
             Section("Notes") {
                 TextField("Notes", text: notes, axis: .vertical)
                     .lineLimit(6...12)
                     .frame(minHeight: 144, alignment: .top)
                     .textInputAutocapitalization(.sentences)
+                    .focused($focusedField, equals: .notes)
                     .accessibilityLabel("Notes")
             }
             Section("Timeline") {
@@ -108,6 +111,14 @@ struct TaskDetailContent: View {
         }
         .onAppear {
             presentInitialVitalsEntryIfNeeded()
+            restoreFocusedFieldIfNeeded()
+        }
+        .onChange(of: initialVitalsEntryID) { _, _ in
+            didPresentInitialVitalsEntry = false
+            presentInitialVitalsEntryIfNeeded()
+        }
+        .onChange(of: focusedField) { _, newValue in
+            focusedFieldRawValue = TaskDetailFocusField.storageValue(for: newValue)
         }
         .sheet(item: $editingEvent) { event in
             TimelineEventEditor(model: model, event: event)
@@ -238,6 +249,14 @@ struct TaskDetailContent: View {
         onInitialVitalsEntryPresented()
     }
 
+    private func restoreFocusedFieldIfNeeded() {
+        guard focusedField == nil,
+              let restoredField = TaskDetailFocusField.field(from: focusedFieldRawValue)
+        else { return }
+
+        focusedField = restoredField
+    }
+
     private var errorBinding: Binding<Bool> {
         Binding(
             get: { model.errorMessage != nil },
@@ -284,7 +303,11 @@ struct TaskDetailContent: View {
         )
     }
 
-    private func detailTextField(_ title: String, text: Binding<String>) -> some View {
+    private func detailTextField(
+        _ title: String,
+        text: Binding<String>,
+        field: TaskDetailFocusField
+    ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption.weight(.semibold))
@@ -292,9 +315,26 @@ struct TaskDetailContent: View {
             TextField(title, text: text)
                 .font(.body)
                 .textInputAutocapitalization(.words)
+                .focused($focusedField, equals: field)
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+}
+
+enum TaskDetailFocusField: String, Hashable {
+    case taskNumber
+    case subjectName
+    case location
+    case scribeName
+    case notes
+
+    static func field(from storageValue: String) -> TaskDetailFocusField? {
+        TaskDetailFocusField(rawValue: storageValue)
+    }
+
+    static func storageValue(for field: TaskDetailFocusField?) -> String {
+        field?.rawValue ?? ""
     }
 }
 

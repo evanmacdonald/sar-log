@@ -117,6 +117,36 @@ final class TaskListViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testTaskLookupRestoresPersistedNavigationTarget() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask(subjectName: "Taylor")
+        let model = TaskListViewModel(repository: repository)
+
+        let restored = try XCTUnwrap(model.task(id: task.id))
+
+        XCTAssertEqual(restored.id, task.id)
+        XCTAssertEqual(restored.subjectName, "Taylor")
+        XCTAssertNil(model.errorMessage)
+    }
+
+    @MainActor
+    func testTaskLookupReturnsNilForMissingRestoreTarget() throws {
+        let store = try makeStore()
+
+        XCTAssertNil(store.model.task(id: UUID()))
+        XCTAssertNil(store.model.errorMessage)
+    }
+
+    func testTaskSceneRestorationParsesStoredTaskID() throws {
+        let taskID = try XCTUnwrap(UUID(uuidString: "00000000-0000-0000-0000-000000000013"))
+
+        XCTAssertEqual(TaskSceneRestoration.taskID(from: taskID.uuidString), taskID)
+        XCTAssertNil(TaskSceneRestoration.taskID(from: "not-a-uuid"))
+        XCTAssertNil(TaskSceneRestoration.taskID(from: ""))
+    }
+
+    @MainActor
     private func makeStore() throws -> ModelStore {
         let container = try SARLogModelContainer.inMemory()
         return ModelStore(

@@ -253,7 +253,7 @@ Do not implement these in any PR. From charter §9:
     state is recoverable; storage file shows up in a device backup
     inspection.
 
-- [ ] **PR 13 — Long-backgrounding resume**
+- [x] **PR 13 — Long-backgrounding resume**
   - Use SwiftUI scene storage / state restoration to restore the
     navigation stack and in-progress text-entry state after the app
     is backgrounded for hours or the screen locks mid-entry.

@@ -81,4 +81,14 @@ final class SARLogTests: XCTestCase {
         categorical.skinColour = "Pale"
         XCTAssertTrue(categorical.hasClinicalData)
     }
+
+    // MARK: - Scene restoration
+
+    func testTaskDetailFocusFieldRoundTripsThroughSceneStorageValue() {
+        XCTAssertEqual(TaskDetailFocusField.field(from: "notes"), .notes)
+        XCTAssertEqual(TaskDetailFocusField.field(from: "taskNumber"), .taskNumber)
+        XCTAssertEqual(TaskDetailFocusField.storageValue(for: .notes), "notes")
+        XCTAssertEqual(TaskDetailFocusField.storageValue(for: nil), "")
+        XCTAssertNil(TaskDetailFocusField.field(from: "unknown"))
+    }
 }
