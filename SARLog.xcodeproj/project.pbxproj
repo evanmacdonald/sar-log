@@ -26,6 +26,10 @@
 		1A2B3C4D5E6F700100000015 /* TimelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */; };
 		1A2B3C4D5E6F700100000016 /* PredefinedTimelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000011F /* PredefinedTimelineEvent.swift */; };
 		1A2B3C4D5E6F700100000017 /* VitalsEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000120 /* VitalsEntry.swift */; };
+		1A2B3C4D5E6F700100000018 /* SARLogPDFReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000121 /* SARLogPDFReport.swift */; };
+		1A2B3C4D5E6F700100000019 /* SARLogPDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000122 /* SARLogPDFRenderer.swift */; };
+		1A2B3C4D5E6F70010000001A /* PDFShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000123 /* PDFShareSheet.swift */; };
+		1A2B3C4D5E6F70010000001B /* SARLogPDFReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +64,10 @@
 		1A2B3C4D5E6F70010000011E /* TimelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEvent.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000011F /* PredefinedTimelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredefinedTimelineEvent.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000120 /* VitalsEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalsEntry.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000121 /* SARLogPDFReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogPDFReport.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000122 /* SARLogPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogPDFRenderer.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000123 /* PDFShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFShareSheet.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogPDFReportTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +103,7 @@
 				1A2B3C4D5E6F700100000102 /* ContentView.swift */,
 				1A2B3C4D5E6F700100000308 /* TaskList */,
 				1A2B3C4D5E6F70010000030A /* TaskDetail */,
+				1A2B3C4D5E6F70010000030C /* PDFExport */,
 				1A2B3C4D5E6F700100000306 /* Persistence */,
 				1A2B3C4D5E6F700100000305 /* Support */,
 				1A2B3C4D5E6F700100000304 /* Tests */,
@@ -183,6 +192,25 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F70010000011C /* TaskDetailViewModelTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F70010000030C /* PDFExport */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000121 /* SARLogPDFReport.swift */,
+				1A2B3C4D5E6F700100000122 /* SARLogPDFRenderer.swift */,
+				1A2B3C4D5E6F700100000123 /* PDFShareSheet.swift */,
+				1A2B3C4D5E6F70010000030D /* Tests */,
+			);
+			path = PDFExport;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F70010000030D /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -299,6 +327,9 @@
 				1A2B3C4D5E6F70010000000C /* TaskDetailView.swift in Sources */,
 				1A2B3C4D5E6F700100000011 /* TaskDetailViewModel.swift in Sources */,
 				1A2B3C4D5E6F700100000016 /* PredefinedTimelineEvent.swift in Sources */,
+				1A2B3C4D5E6F700100000018 /* SARLogPDFReport.swift in Sources */,
+				1A2B3C4D5E6F700100000019 /* SARLogPDFRenderer.swift in Sources */,
+				1A2B3C4D5E6F70010000001A /* PDFShareSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +342,7 @@
 				1A2B3C4D5E6F70010000000D /* TaskListViewModelTests.swift in Sources */,
 				1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */,
 				1A2B3C4D5E6F700100000013 /* TaskDetailViewModelTests.swift in Sources */,
+				1A2B3C4D5E6F70010000001B /* SARLogPDFReportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

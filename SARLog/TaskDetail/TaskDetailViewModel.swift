@@ -218,6 +218,25 @@ final class TaskDetailViewModel {
         }
     }
 
+    func exportPDF(generatedAt: Date = .now) -> URL? {
+        do {
+            let events = try repository.timelineEvents(for: task)
+            let entries = try repository.vitalsEntries(for: task)
+            let report = SARLogPDFReportBuilder.makeReport(
+                task: task,
+                timelineEvents: events,
+                vitalsEntries: entries,
+                generatedAt: generatedAt
+            )
+            let url = try SARLogPDFFileExporter.writeTemporaryPDF(report: report)
+            errorMessage = nil
+            return url
+        } catch {
+            errorMessage = "PDF could not be created. Try again before sharing this task."
+            return nil
+        }
+    }
+
     @discardableResult
     func deleteTask() -> Bool {
         do {
