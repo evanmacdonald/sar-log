@@ -74,6 +74,15 @@ final class TaskDetailViewModel {
         }
     }
 
+    func timelineEvent(id: UUID) -> TimelineEvent? {
+        do {
+            return try repository.timelineEvent(id: id)
+        } catch {
+            errorMessage = "Timeline event could not be loaded."
+            return nil
+        }
+    }
+
     func deleteTimelineEvent(_ event: TimelineEvent) {
         performMutation {
             try repository.deleteTimelineEvent(event)

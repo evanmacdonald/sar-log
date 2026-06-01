@@ -168,6 +168,13 @@ struct TaskRepository {
         try saveOrRollback()
     }
 
+    func timelineEvent(id: UUID) throws -> TimelineEvent? {
+        let descriptor = FetchDescriptor<TimelineEvent>(
+            predicate: #Predicate { $0.id == id }
+        )
+        return try context.fetch(descriptor).first
+    }
+
     func deleteTimelineEvent(_ event: TimelineEvent) throws {
         context.delete(event)
         try saveOrRollback()
