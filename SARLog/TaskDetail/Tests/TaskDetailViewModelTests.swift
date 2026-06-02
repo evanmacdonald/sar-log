@@ -313,7 +313,7 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
-    func testApplyPrefillCopiesPreviousValuesButKeepsEnteredOnes() throws {
+    func testFieldSuggestionCopiesOnlyTheSelectedPreviousValue() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)
         let task = try repository.createTask()
@@ -324,14 +324,13 @@ final class TaskDetailViewModelTests: XCTestCase {
         model.finishVitalsEntry(source)
 
         let target = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 200)))
-        model.updateVitalsEntry(target, set: \.heartRate, to: 90)
 
         let previous = try XCTUnwrap(model.previousVitalsEntry(before: target))
-        model.applyPrefill(to: target, from: previous)
+        model.updateVitalsEntry(target, set: \.painScore, to: previous.painScore)
 
         let fetched = try XCTUnwrap(repository.vitalsEntries(for: task).first { $0.id == target.id })
-        XCTAssertEqual(fetched.heartRate, 90, "Entered value is preserved")
-        XCTAssertEqual(fetched.painScore, 4, "Empty field is prefilled from previous")
+        XCTAssertNil(fetched.heartRate, "Unselected previous values must not be copied")
+        XCTAssertEqual(fetched.painScore, 4, "Selected previous value is copied")
         XCTAssertNil(model.errorMessage)
     }
 

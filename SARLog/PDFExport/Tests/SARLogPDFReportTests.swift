@@ -84,6 +84,17 @@ final class SARLogPDFReportTests: XCTestCase {
         XCTAssertGreaterThan(longHeight, shortHeight)
     }
 
+    func testLayoutReservesSubjectLocationBandBeforeTable() {
+        XCTAssertEqual(
+            SARLogPDFLayout.subjectInfoY,
+            SARLogPDFLayout.headerY + SARLogPDFLayout.headerHeight + SARLogPDFLayout.tableTopSpacing
+        )
+        XCTAssertEqual(
+            SARLogPDFLayout.tableY,
+            SARLogPDFLayout.subjectInfoY + SARLogPDFLayout.subjectInfoHeight + SARLogPDFLayout.subjectInfoBottomSpacing
+        )
+    }
+
     func testStandardTaskNumberFitsHeaderValueOnOneLine() {
         let taskNumber = "12-34567"
         let taskCell = CGRect(x: 0, y: 0, width: 135, height: 34)

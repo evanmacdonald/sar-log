@@ -15,6 +15,8 @@ enum SARLogPDFLayout {
     static let headerY: CGFloat = 30
     static let headerHeight: CGFloat = 86
     static let tableTopSpacing: CGFloat = 12
+    static let subjectInfoHeight: CGFloat = 32
+    static let subjectInfoBottomSpacing: CGFloat = 8
     static let tableHeaderHeight: CGFloat = 40
     static let footerY: CGFloat = 742
     static let footerHeight: CGFloat = 22
@@ -38,6 +40,10 @@ enum SARLogPDFLayout {
     }
 
     static var tableY: CGFloat {
+        subjectInfoY + subjectInfoHeight + subjectInfoBottomSpacing
+    }
+
+    static var subjectInfoY: CGFloat {
         headerY + headerHeight + tableTopSpacing
     }
 
@@ -235,6 +241,7 @@ enum SARLogPDFRenderer {
         in context: CGContext
     ) {
         drawHeader(report: report, in: context)
+        drawSubjectInfo(report: report, in: context)
         drawTableHeader(in: context)
 
         var y = SARLogPDFLayout.tableY + SARLogPDFLayout.tableHeaderHeight
@@ -306,6 +313,44 @@ enum SARLogPDFRenderer {
         drawText("STN.\nCALLED", in: CGRect(x: x + timeWidth, y: y + stationHeaderHeight + 2, width: calledWidth, height: 18), font: .boldSystemFont(ofSize: 8), alignment: .center)
         drawText("THIS IS", in: CGRect(x: x + timeWidth + calledWidth, y: y + stationHeaderHeight + 7, width: thisIsWidth, height: 10), font: .boldSystemFont(ofSize: 8), alignment: .center)
         drawText("SUBJECT", in: CGRect(x: x + timeWidth + calledWidth + thisIsWidth, y: y + 13, width: subjectWidth, height: 12), font: .systemFont(ofSize: 9), alignment: .center)
+    }
+
+    private static func drawSubjectInfo(report: SARLogPDFReport, in context: CGContext) {
+        let rect = CGRect(
+            x: SARLogPDFLayout.contentX,
+            y: SARLogPDFLayout.subjectInfoY,
+            width: SARLogPDFLayout.contentWidth,
+            height: SARLogPDFLayout.subjectInfoHeight
+        )
+        strokeRect(rect, in: context)
+        drawText(
+            "SUBJECT / LOCATION",
+            in: CGRect(x: rect.minX + 6, y: rect.minY + 4, width: 112, height: 10),
+            font: SARLogPDFLayout.headerLabelFont,
+            alignment: .left
+        )
+
+        let subject = displayOrBlank(report.taskName)
+        let location = displayOrBlank(report.location)
+        let value: String
+        switch (subject.isEmpty, location.isEmpty) {
+        case (true, true):
+            value = ""
+        case (false, true):
+            value = "Subject: \(subject)"
+        case (true, false):
+            value = "Location: \(location)"
+        case (false, false):
+            value = "Subject: \(subject)    Location: \(location)"
+        }
+
+        drawText(
+            value,
+            in: CGRect(x: rect.minX + 6, y: rect.minY + 15, width: rect.width - 12, height: 14),
+            font: SARLogPDFLayout.headerValueFont,
+            alignment: .left,
+            lineBreakMode: .byTruncatingTail
+        )
     }
 
     private static func drawTableRow(_ layout: SARLogPDFRowLayout, y: CGFloat, in context: CGContext) {
