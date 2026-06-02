@@ -28,6 +28,10 @@ enum SARLogPDFLayout {
     static let rowFont = UIFont.systemFont(ofSize: 10)
     static let timeFont = UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
     static let notesFont = UIFont.systemFont(ofSize: 11)
+    static let headerLabelFont = UIFont.boldSystemFont(ofSize: 8)
+    static let headerValueFont = UIFont.systemFont(ofSize: 8)
+    static let headerValueLeading: CGFloat = 58
+    static let headerHorizontalPadding: CGFloat = 6
 
     static var subjectColumnWidth: CGFloat {
         contentWidth - timeColumnWidth - stationCalledColumnWidth - thisIsColumnWidth
@@ -132,6 +136,48 @@ enum SARLogPDFLayout {
 
         return ranges
     }
+
+    static func headerValueRect(in rect: CGRect) -> CGRect {
+        let valueX = rect.minX + headerValueLeading
+        let valueWidth = max(1, rect.maxX - valueX - headerHorizontalPadding)
+        return CGRect(
+            x: valueX,
+            y: rect.minY + 3,
+            width: valueWidth,
+            height: max(1, rect.height - 6)
+        )
+    }
+
+    static func standardTaskNumberFitsOnOneLine(_ taskNumber: String, in width: CGFloat) -> Bool {
+        guard isStandardTaskNumber(taskNumber) else { return false }
+        return oneLineTextWidth(taskNumber, font: standardTaskNumberFont(for: taskNumber, width: width)) <= width
+    }
+
+    static func standardTaskNumberFont(for taskNumber: String, width: CGFloat) -> UIFont {
+        guard isStandardTaskNumber(taskNumber) else { return headerValueFont }
+
+        let baseSize = headerValueFont.pointSize
+        let measuredWidth = oneLineTextWidth(taskNumber, font: headerValueFont)
+        guard measuredWidth > width, measuredWidth > 0 else { return headerValueFont }
+
+        let fittedSize = max(6, floor(baseSize * width / measuredWidth))
+        return .systemFont(ofSize: fittedSize)
+    }
+
+    private static func isStandardTaskNumber(_ taskNumber: String) -> Bool {
+        let trimmed = taskNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count == 8 else { return false }
+
+        let parts = trimmed.split(separator: "-", omittingEmptySubsequences: false)
+        return parts.count == 2
+            && parts[0].count == 2
+            && parts[1].count == 5
+            && parts.allSatisfy { $0.allSatisfy(\.isNumber) }
+    }
+
+    private static func oneLineTextWidth(_ text: String, font: UIFont) -> CGFloat {
+        ceil((text as NSString).size(withAttributes: [.font: font]).width)
+    }
 }
 
 enum SARLogPDFRenderer {
@@ -222,7 +268,7 @@ enum SARLogPDFRenderer {
         drawText("LOG", in: CGRect(x: x, y: y + 6, width: leftWidth, height: 18), font: .boldSystemFont(ofSize: 17), alignment: .center)
         drawText("RECORD COMMS & MAJOR EVENTS", in: CGRect(x: x + 6, y: y + 25, width: leftWidth - 12, height: 12), font: .boldSystemFont(ofSize: 8), alignment: .center)
 
-        drawLabelValue(label: "TASK #", value: report.taskNumber, in: CGRect(x: x + leftWidth, y: y, width: taskWidth, height: rowOneHeight))
+        drawTaskNumberLabelValue(value: report.taskNumber, in: CGRect(x: x + leftWidth, y: y, width: taskWidth, height: rowOneHeight))
         drawLabelValue(label: "FOR PERIOD:", value: dateTimeString(report.periodStart), in: CGRect(x: x + leftWidth + taskWidth, y: y, width: width - leftWidth - taskWidth, height: rowOneHeight / 2))
         drawLabelValue(label: "TO:", value: dateTimeString(report.periodEnd), in: CGRect(x: x + leftWidth + taskWidth, y: y + rowOneHeight / 2, width: width - leftWidth - taskWidth, height: rowOneHeight / 2))
 
@@ -339,15 +385,32 @@ enum SARLogPDFRenderer {
     }
 
     private static func drawLabelValue(label: String, value: String, in rect: CGRect) {
-        drawText(label, in: rect.insetBy(dx: 6, dy: 3), font: .boldSystemFont(ofSize: 8), alignment: .left)
+        drawText(label, in: rect.insetBy(dx: SARLogPDFLayout.headerHorizontalPadding, dy: 3), font: SARLogPDFLayout.headerLabelFont, alignment: .left)
         guard !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        drawText(value, in: rect.insetBy(dx: 58, dy: 3), font: .systemFont(ofSize: 8), alignment: .left)
+        drawText(value, in: SARLogPDFLayout.headerValueRect(in: rect), font: SARLogPDFLayout.headerValueFont, alignment: .left)
     }
 
-    private static func drawText(_ text: String, in rect: CGRect, font: UIFont, alignment: NSTextAlignment) {
+    private static func drawTaskNumberLabelValue(value: String, in rect: CGRect) {
+        drawText("TASK #", in: rect.insetBy(dx: SARLogPDFLayout.headerHorizontalPadding, dy: 3), font: SARLogPDFLayout.headerLabelFont, alignment: .left)
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let valueRect = SARLogPDFLayout.headerValueRect(in: rect)
+        let font = SARLogPDFLayout.standardTaskNumberFont(for: trimmed, width: valueRect.width)
+        drawText(trimmed, in: valueRect, font: font, alignment: .left, lineBreakMode: .byClipping)
+    }
+
+    private static func drawText(
+        _ text: String,
+        in rect: CGRect,
+        font: UIFont,
+        alignment: NSTextAlignment,
+        lineBreakMode: NSLineBreakMode = .byWordWrapping
+    ) {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = alignment
-        paragraphStyle.lineBreakMode = .byWordWrapping
+        paragraphStyle.lineBreakMode = lineBreakMode
         (text as NSString).draw(
             in: rect,
             withAttributes: [
