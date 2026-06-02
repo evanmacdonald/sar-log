@@ -84,6 +84,16 @@ final class SARLogPDFReportTests: XCTestCase {
         XCTAssertGreaterThan(longHeight, shortHeight)
     }
 
+    func testStandardTaskNumberFitsHeaderValueOnOneLine() {
+        let taskNumber = "12-34567"
+        let taskCell = CGRect(x: 0, y: 0, width: 135, height: 34)
+        let valueRect = SARLogPDFLayout.headerValueRect(in: taskCell)
+
+        XCTAssertGreaterThan(valueRect.width, 19)
+        XCTAssertTrue(SARLogPDFLayout.standardTaskNumberFitsOnOneLine(taskNumber, in: valueRect.width))
+        XCTAssertFalse(SARLogPDFLayout.standardTaskNumberFitsOnOneLine("2026-123", in: valueRect.width))
+    }
+
     func testLayoutPaginatesRowsWithoutDroppingEntries() {
         let rows = (0..<10).map { index in
             SARLogPDFLogRow(
