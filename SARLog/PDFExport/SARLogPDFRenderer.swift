@@ -15,8 +15,6 @@ enum SARLogPDFLayout {
     static let headerY: CGFloat = 30
     static let headerHeight: CGFloat = 86
     static let tableTopSpacing: CGFloat = 12
-    static let subjectInfoHeight: CGFloat = 32
-    static let subjectInfoBottomSpacing: CGFloat = 8
     static let tableHeaderHeight: CGFloat = 40
     static let footerY: CGFloat = 742
     static let footerHeight: CGFloat = 22
@@ -32,7 +30,9 @@ enum SARLogPDFLayout {
     static let notesFont = UIFont.systemFont(ofSize: 11)
     static let headerLabelFont = UIFont.boldSystemFont(ofSize: 8)
     static let headerValueFont = UIFont.systemFont(ofSize: 8)
+    static let headerTaskNumberValueLeading: CGFloat = 44
     static let headerValueLeading: CGFloat = 58
+    static let headerLongLabelValueLeading: CGFloat = 78
     static let headerHorizontalPadding: CGFloat = 6
 
     static var subjectColumnWidth: CGFloat {
@@ -40,10 +40,6 @@ enum SARLogPDFLayout {
     }
 
     static var tableY: CGFloat {
-        subjectInfoY + subjectInfoHeight + subjectInfoBottomSpacing
-    }
-
-    static var subjectInfoY: CGFloat {
         headerY + headerHeight + tableTopSpacing
     }
 
@@ -143,8 +139,8 @@ enum SARLogPDFLayout {
         return ranges
     }
 
-    static func headerValueRect(in rect: CGRect) -> CGRect {
-        let valueX = rect.minX + headerValueLeading
+    static func headerValueRect(in rect: CGRect, valueLeading: CGFloat = headerValueLeading) -> CGRect {
+        let valueX = rect.minX + valueLeading
         let valueWidth = max(1, rect.maxX - valueX - headerHorizontalPadding)
         return CGRect(
             x: valueX,
@@ -241,7 +237,6 @@ enum SARLogPDFRenderer {
         in context: CGContext
     ) {
         drawHeader(report: report, in: context)
-        drawSubjectInfo(report: report, in: context)
         drawTableHeader(in: context)
 
         var y = SARLogPDFLayout.tableY + SARLogPDFLayout.tableHeaderHeight
@@ -281,10 +276,20 @@ enum SARLogPDFRenderer {
 
         drawText("FOR OP.", in: CGRect(x: x + 6, y: y + rowOneHeight + 2, width: leftWidth - 12, height: 10), font: .systemFont(ofSize: 8), alignment: .left)
         drawText("PERIOD #", in: CGRect(x: x + 6, y: y + rowOneHeight + 13, width: leftWidth - 12, height: 10), font: .systemFont(ofSize: 8), alignment: .left)
-        drawLabelValue(label: "TASK NAME:", value: report.taskName, in: CGRect(x: x + leftWidth, y: y + rowOneHeight, width: width - leftWidth, height: rowTwoHeight))
+        drawLabelValue(
+            label: "TASK NAME:",
+            value: report.taskName,
+            in: CGRect(x: x + leftWidth, y: y + rowOneHeight, width: width - leftWidth, height: rowTwoHeight),
+            valueLeading: SARLogPDFLayout.headerLongLabelValueLeading
+        )
 
         drawLabelValue(label: "RADIO OP. (OPERATIONS):", value: "", in: CGRect(x: x, y: y + rowOneHeight + rowTwoHeight, width: leftWidth, height: rowThreeHeight))
-        drawLabelValue(label: "LOG KEEPER:", value: report.logKeeper, in: CGRect(x: x + leftWidth, y: y + rowOneHeight + rowTwoHeight, width: middleWidth, height: rowThreeHeight))
+        drawLabelValue(
+            label: "LOG KEEPER:",
+            value: report.logKeeper,
+            in: CGRect(x: x + leftWidth, y: y + rowOneHeight + rowTwoHeight, width: middleWidth, height: rowThreeHeight),
+            valueLeading: SARLogPDFLayout.headerLongLabelValueLeading
+        )
         drawText("STATION", in: CGRect(x: x + leftWidth + middleWidth + 6, y: y + rowOneHeight + rowTwoHeight + 2, width: width - leftWidth - middleWidth - 12, height: 10), font: .systemFont(ofSize: 8), alignment: .left)
         drawText("CALLSIGN:", in: CGRect(x: x + leftWidth + middleWidth + 6, y: y + rowOneHeight + rowTwoHeight + 15, width: width - leftWidth - middleWidth - 12, height: 10), font: .systemFont(ofSize: 8), alignment: .left)
     }
@@ -313,44 +318,6 @@ enum SARLogPDFRenderer {
         drawText("STN.\nCALLED", in: CGRect(x: x + timeWidth, y: y + stationHeaderHeight + 2, width: calledWidth, height: 18), font: .boldSystemFont(ofSize: 8), alignment: .center)
         drawText("THIS IS", in: CGRect(x: x + timeWidth + calledWidth, y: y + stationHeaderHeight + 7, width: thisIsWidth, height: 10), font: .boldSystemFont(ofSize: 8), alignment: .center)
         drawText("SUBJECT", in: CGRect(x: x + timeWidth + calledWidth + thisIsWidth, y: y + 13, width: subjectWidth, height: 12), font: .systemFont(ofSize: 9), alignment: .center)
-    }
-
-    private static func drawSubjectInfo(report: SARLogPDFReport, in context: CGContext) {
-        let rect = CGRect(
-            x: SARLogPDFLayout.contentX,
-            y: SARLogPDFLayout.subjectInfoY,
-            width: SARLogPDFLayout.contentWidth,
-            height: SARLogPDFLayout.subjectInfoHeight
-        )
-        strokeRect(rect, in: context)
-        drawText(
-            "SUBJECT / LOCATION",
-            in: CGRect(x: rect.minX + 6, y: rect.minY + 4, width: 112, height: 10),
-            font: SARLogPDFLayout.headerLabelFont,
-            alignment: .left
-        )
-
-        let subject = displayOrBlank(report.taskName)
-        let location = displayOrBlank(report.location)
-        let value: String
-        switch (subject.isEmpty, location.isEmpty) {
-        case (true, true):
-            value = ""
-        case (false, true):
-            value = "Subject: \(subject)"
-        case (true, false):
-            value = "Location: \(location)"
-        case (false, false):
-            value = "Subject: \(subject)    Location: \(location)"
-        }
-
-        drawText(
-            value,
-            in: CGRect(x: rect.minX + 6, y: rect.minY + 15, width: rect.width - 12, height: 14),
-            font: SARLogPDFLayout.headerValueFont,
-            alignment: .left,
-            lineBreakMode: .byTruncatingTail
-        )
     }
 
     private static func drawTableRow(_ layout: SARLogPDFRowLayout, y: CGFloat, in context: CGContext) {
@@ -429,10 +396,15 @@ enum SARLogPDFRenderer {
         drawText("REV 04/12/13", in: CGRect(x: x + SARLogPDFLayout.contentWidth - 58, y: y + 26, width: 58, height: 10), font: .systemFont(ofSize: 7), alignment: .center)
     }
 
-    private static func drawLabelValue(label: String, value: String, in rect: CGRect) {
+    private static func drawLabelValue(
+        label: String,
+        value: String,
+        in rect: CGRect,
+        valueLeading: CGFloat = SARLogPDFLayout.headerValueLeading
+    ) {
         drawText(label, in: rect.insetBy(dx: SARLogPDFLayout.headerHorizontalPadding, dy: 3), font: SARLogPDFLayout.headerLabelFont, alignment: .left)
         guard !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        drawText(value, in: SARLogPDFLayout.headerValueRect(in: rect), font: SARLogPDFLayout.headerValueFont, alignment: .left)
+        drawText(value, in: SARLogPDFLayout.headerValueRect(in: rect, valueLeading: valueLeading), font: SARLogPDFLayout.headerValueFont, alignment: .left)
     }
 
     private static func drawTaskNumberLabelValue(value: String, in rect: CGRect) {
@@ -441,7 +413,10 @@ enum SARLogPDFRenderer {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        let valueRect = SARLogPDFLayout.headerValueRect(in: rect)
+        let valueRect = SARLogPDFLayout.headerValueRect(
+            in: rect,
+            valueLeading: SARLogPDFLayout.headerTaskNumberValueLeading
+        )
         let font = SARLogPDFLayout.standardTaskNumberFont(for: trimmed, width: valueRect.width)
         drawText(trimmed, in: valueRect, font: font, alignment: .left, lineBreakMode: .byClipping)
     }

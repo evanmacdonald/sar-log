@@ -84,25 +84,34 @@ final class SARLogPDFReportTests: XCTestCase {
         XCTAssertGreaterThan(longHeight, shortHeight)
     }
 
-    func testLayoutReservesSubjectLocationBandBeforeTable() {
-        XCTAssertEqual(
-            SARLogPDFLayout.subjectInfoY,
-            SARLogPDFLayout.headerY + SARLogPDFLayout.headerHeight + SARLogPDFLayout.tableTopSpacing
-        )
-        XCTAssertEqual(
-            SARLogPDFLayout.tableY,
-            SARLogPDFLayout.subjectInfoY + SARLogPDFLayout.subjectInfoHeight + SARLogPDFLayout.subjectInfoBottomSpacing
-        )
-    }
-
     func testStandardTaskNumberFitsHeaderValueOnOneLine() {
         let taskNumber = "12-34567"
         let taskCell = CGRect(x: 0, y: 0, width: 135, height: 34)
-        let valueRect = SARLogPDFLayout.headerValueRect(in: taskCell)
+        let valueRect = SARLogPDFLayout.headerValueRect(
+            in: taskCell,
+            valueLeading: SARLogPDFLayout.headerTaskNumberValueLeading
+        )
 
         XCTAssertGreaterThan(valueRect.width, 19)
         XCTAssertTrue(SARLogPDFLayout.standardTaskNumberFitsOnOneLine(taskNumber, in: valueRect.width))
         XCTAssertFalse(SARLogPDFLayout.standardTaskNumberFitsOnOneLine("2026-123", in: valueRect.width))
+    }
+
+    func testHeaderValueOffsetsMatchLabelLengths() {
+        let rect = CGRect(x: 0, y: 0, width: 200, height: 24)
+        let taskNumberRect = SARLogPDFLayout.headerValueRect(
+            in: rect,
+            valueLeading: SARLogPDFLayout.headerTaskNumberValueLeading
+        )
+        let defaultRect = SARLogPDFLayout.headerValueRect(in: rect)
+        let longLabelRect = SARLogPDFLayout.headerValueRect(
+            in: rect,
+            valueLeading: SARLogPDFLayout.headerLongLabelValueLeading
+        )
+
+        XCTAssertLessThan(taskNumberRect.minX, defaultRect.minX)
+        XCTAssertGreaterThan(longLabelRect.minX, defaultRect.minX)
+        XCTAssertGreaterThan(taskNumberRect.width, longLabelRect.width)
     }
 
     func testLayoutPaginatesRowsWithoutDroppingEntries() {
