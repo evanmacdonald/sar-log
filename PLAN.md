@@ -264,10 +264,8 @@ Do not implement these in any PR. From charter §9:
 
 ### PDF export
 
-- [ ] **PR 14 — PDF export + iOS share sheet** *(blocked on PEP form
-  sample)*
-  - Precondition: Evan delivers the BC SAR / PEP paper-form sample.
-    Do not start until then.
+- [x] **PR 14 — PDF export + iOS share sheet**
+  - _Completed after Evan provided the BC SAR / PEP paper-form sample._
   - Generate a PDF that mirrors the paper form.
     - Header: task #, subject name, scribe name, date, generated-at.
     - Body in order: subject info + location → timeline table →
