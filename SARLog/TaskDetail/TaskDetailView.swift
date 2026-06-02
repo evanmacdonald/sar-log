@@ -585,9 +585,9 @@ struct NewTimelineEventEditor: View {
 /// per charter §4), and categorical fields are single-tap menu pickers.
 ///
 /// When opened on a blank new entry and an earlier reading exists, each field
-/// offers the previous value as a one-tap suggestion (plus an "apply all"
-/// shortcut). Suggestions are opt-in: nothing is carried forward until the
-/// scribe taps it, and an unconfirmed suggestion is never saved.
+/// offers the previous value as a one-tap suggestion. Suggestions are opt-in:
+/// nothing is carried forward until the scribe taps that field's suggestion,
+/// and an unconfirmed suggestion is never saved.
 struct VitalsEntryEditor: View {
     @Bindable var model: TaskDetailViewModel
     let entry: VitalsEntry
@@ -702,17 +702,9 @@ struct VitalsEntryEditor: View {
 
     private func prefillBanner(_ source: VitalsEntry) -> some View {
         Section {
-            Text("Last reading at \(source.timestamp.formatted(date: .omitted, time: .shortened)). Tap a field's suggestion to copy it, or copy them all.")
+            Text("Last reading at \(source.timestamp.formatted(date: .omitted, time: .shortened)). Tap each field's suggestion to copy that value.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            Button {
-                model.applyPrefill(to: entry, from: source)
-            } label: {
-                Label("Use all previous values", systemImage: "doc.on.doc")
-                    .frame(maxWidth: .infinity, minHeight: 44)
-            }
-            .buttonStyle(.borderedProminent)
-            .accessibilityLabel("Use all previous values")
         } header: {
             Text("Prefill from previous")
         }

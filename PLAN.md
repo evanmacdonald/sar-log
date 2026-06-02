@@ -280,7 +280,7 @@ Do not implement these in any PR. From charter §9:
 
 ### App Store prep
 
-- [ ] **PR 15 — Privacy manifest**
+- [x] **PR 15 — Privacy manifest**
   - Add `PrivacyInfo.xcprivacy` declaring no data collection, no
     tracking, no required reason APIs beyond what's actually used.
   - No third-party SDKs to declare.

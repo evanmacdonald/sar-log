@@ -139,15 +139,6 @@ final class TaskDetailViewModel {
         return vitalsEntries[..<index].last { !$0.isDraft && $0.hasClinicalData }
     }
 
-    /// Carry the previous reading's values into `entry` for every field the
-    /// scribe hasn't already filled. Explicit opt-in — never called
-    /// automatically.
-    func applyPrefill(to entry: VitalsEntry, from source: VitalsEntry) {
-        performMutation {
-            try repository.prefillVitalsEntry(entry, from: source)
-        }
-    }
-
     @discardableResult
     func finishVitalsEntry(_ entry: VitalsEntry) -> Bool {
         do {
