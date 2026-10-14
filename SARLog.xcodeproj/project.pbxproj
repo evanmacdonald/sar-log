@@ -31,6 +31,7 @@
 		1A2B3C4D5E6F70010000001A /* PDFShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000123 /* PDFShareSheet.swift */; };
 		1A2B3C4D5E6F70010000001B /* SARLogPDFReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */; };
 		1A2B3C4D5E6F70010000001C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000125 /* PrivacyInfo.xcprivacy */; };
+		1A2B3C4D5E6F7001000000F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 		1A2B3C4D5E6F700100000123 /* PDFShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFShareSheet.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogPDFReportTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000125 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 				1A2B3C4D5E6F700100000101 /* SARLogApp.swift */,
 				1A2B3C4D5E6F700100000102 /* ContentView.swift */,
 				1A2B3C4D5E6F700100000125 /* PrivacyInfo.xcprivacy */,
+				1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */,
 				1A2B3C4D5E6F700100000308 /* TaskList */,
 				1A2B3C4D5E6F70010000030A /* TaskDetail */,
 				1A2B3C4D5E6F70010000030C /* PDFExport */,
@@ -300,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A2B3C4D5E6F70010000001C /* PrivacyInfo.xcprivacy in Resources */,
+				1A2B3C4D5E6F7001000000F2 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,8 +487,9 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = L4YMQK6643;
+				DEVELOPMENT_TEAM = NU98D7J463;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "SAR Log";
@@ -512,8 +517,9 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = L4YMQK6643;
+				DEVELOPMENT_TEAM = NU98D7J463;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "SAR Log";
