@@ -12,7 +12,7 @@ jobs:
   build-test:
     name: Build and test
     runs-on: macos-26
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       PROJECT: SARLog.xcodeproj
       SCHEME: SARLog
