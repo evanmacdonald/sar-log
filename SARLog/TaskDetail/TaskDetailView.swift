@@ -37,6 +37,7 @@ struct TaskDetailContent: View {
     @SceneStorage("TaskDetail.editingVitalsEntryID") private var editingVitalsEntryIDString = ""
     @SceneStorage("TaskDetail.isAddingCustomEvent") private var isAddingCustomEventStored = false
     @SceneStorage("TaskDetail.customEventID") private var customEventIDString = ""
+    @SceneStorage("TaskDetail.quickEntryCollapsed") private var isQuickEntryCollapsed = false
     @FocusState private var focusedField: TaskDetailFocusField?
     @State private var editingEvent: TimelineEvent?
     @State private var editingVitalsEntry: VitalsEntry?
@@ -204,17 +205,44 @@ struct TaskDetailContent: View {
     /// and frees vertical space so the field being typed in stays visible.
     private var bottomActionPanel: some View {
         Group {
-            if focusedField == nil {
-                quickActionButtons
-                    .padding()
-            } else {
+            if focusedField != nil {
                 keyboardDismissBar
                     .padding(.horizontal)
                     .padding(.vertical, 6)
+            } else if isQuickEntryCollapsed {
+                quickEntryToggle(collapsed: true)
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+            } else {
+                VStack(spacing: 10) {
+                    quickEntryToggle(collapsed: false)
+                    quickActionButtons
+                }
+                .padding()
             }
         }
         .background(.bar)
         .animation(.easeInOut(duration: 0.2), value: focusedField)
+        .animation(.easeInOut(duration: 0.2), value: isQuickEntryCollapsed)
+    }
+
+    /// Slim handle to collapse the quick-entry panel (for a full-page view of
+    /// the task) or re-expand it. Collapsed state persists via scene storage
+    /// so it survives backgrounding and relaunch.
+    private func quickEntryToggle(collapsed: Bool) -> some View {
+        Button {
+            isQuickEntryCollapsed.toggle()
+        } label: {
+            Label(
+                collapsed ? "Quick entry" : "Minimize",
+                systemImage: collapsed ? "chevron.up" : "chevron.down"
+            )
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 32)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .accessibilityLabel(collapsed ? "Show quick entry buttons" : "Minimize quick entry buttons")
     }
 
     private var keyboardDismissBar: some View {
