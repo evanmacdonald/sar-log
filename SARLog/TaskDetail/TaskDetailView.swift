@@ -37,6 +37,7 @@ struct TaskDetailContent: View {
     @SceneStorage("TaskDetail.editingVitalsEntryID") private var editingVitalsEntryIDString = ""
     @SceneStorage("TaskDetail.isAddingCustomEvent") private var isAddingCustomEventStored = false
     @SceneStorage("TaskDetail.customEventID") private var customEventIDString = ""
+    @SceneStorage("TaskDetail.quickEntryCollapsed") private var isQuickEntryCollapsed = false
     @FocusState private var focusedField: TaskDetailFocusField?
     @State private var editingEvent: TimelineEvent?
     @State private var editingVitalsEntry: VitalsEntry?
@@ -198,7 +199,67 @@ struct TaskDetailContent: View {
         .accessibilityLabel("Task actions")
     }
 
+    /// Bottom panel. While a field is focused the keyboard covers the quick
+    /// buttons anyway, so collapse them to a single large "Hide keyboard" bar:
+    /// it sits in the thumb zone right above the keyboard, dismisses in one tap,
+    /// and frees vertical space so the field being typed in stays visible.
     private var bottomActionPanel: some View {
+        Group {
+            if focusedField != nil {
+                keyboardDismissBar
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+            } else if isQuickEntryCollapsed {
+                quickEntryToggle(collapsed: true)
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+            } else {
+                VStack(spacing: 10) {
+                    quickEntryToggle(collapsed: false)
+                    quickActionButtons
+                }
+                .padding()
+            }
+        }
+        .background(.bar)
+        .animation(.easeInOut(duration: 0.2), value: focusedField)
+        .animation(.easeInOut(duration: 0.2), value: isQuickEntryCollapsed)
+    }
+
+    /// Slim handle to collapse the quick-entry panel (for a full-page view of
+    /// the task) or re-expand it. Collapsed state persists via scene storage
+    /// so it survives backgrounding and relaunch.
+    private func quickEntryToggle(collapsed: Bool) -> some View {
+        Button {
+            isQuickEntryCollapsed.toggle()
+        } label: {
+            Label(
+                collapsed ? "Quick entry" : "Minimize",
+                systemImage: collapsed ? "chevron.up" : "chevron.down"
+            )
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 32)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .accessibilityLabel(collapsed ? "Show quick entry buttons" : "Minimize quick entry buttons")
+    }
+
+    private var keyboardDismissBar: some View {
+        Button {
+            focusedField = nil
+        } label: {
+            Label("Hide keyboard", systemImage: "keyboard.chevron.compact.down")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 32)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .accessibilityLabel("Hide keyboard")
+        .accessibilityHint("Dismisses the keyboard and shows the quick event buttons")
+    }
+
+    private var quickActionButtons: some View {
         VStack(spacing: 12) {
             LazyVGrid(columns: eventButtonColumns, spacing: 10) {
                 ForEach(model.predefinedTimelineEvents) { event in
@@ -250,8 +311,6 @@ struct TaskDetailContent: View {
                 .accessibilityLabel("Add vitals")
             }
         }
-        .padding()
-        .background(.bar)
     }
 
     private func toggleTaskClosedState() {
