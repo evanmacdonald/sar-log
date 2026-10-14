@@ -3,6 +3,7 @@ import SwiftUI
 struct TaskDetailView: View {
     let task: SARTask
     var initialVitalsEntryID: UUID?
+    var autofocusTaskNumber: Bool = false
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     @State private var model: TaskDetailViewModel?
@@ -13,6 +14,7 @@ struct TaskDetailView: View {
                 TaskDetailContent(
                     model: model,
                     initialVitalsEntryID: initialVitalsEntryID,
+                    autofocusTaskNumber: autofocusTaskNumber,
                     onInitialVitalsEntryPresented: onInitialVitalsEntryPresented
                 )
             } else {
@@ -30,6 +32,7 @@ struct TaskDetailView: View {
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
     var initialVitalsEntryID: UUID?
+    var autofocusTaskNumber: Bool = false
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
     @SceneStorage("TaskDetail.focusedField") private var focusedFieldRawValue = ""
@@ -46,6 +49,7 @@ struct TaskDetailContent: View {
     @State private var pdfShareItem: PDFShareItem?
     @State private var didPresentInitialVitalsEntry = false
     @State private var didRestoreEditor = false
+    @State private var didAutofocusTaskNumber = false
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -120,6 +124,7 @@ struct TaskDetailContent: View {
             presentInitialVitalsEntryIfNeeded()
             restoreFocusedFieldIfNeeded()
             restoreActiveEditorIfNeeded()
+            focusTaskNumberIfNewTask()
         }
         .onChange(of: initialVitalsEntryID) { _, _ in
             didPresentInitialVitalsEntry = false
@@ -338,6 +343,21 @@ struct TaskDetailContent: View {
         else { return }
 
         focusedField = restoredField
+    }
+
+    /// On a freshly created task, place the cursor in the Task # field so the
+    /// scribe can start typing immediately. Runs once, and never steals focus
+    /// if the scribe has already tapped another field. The small delay lets the
+    /// push navigation settle so the focus request isn't dropped mid-transition.
+    private func focusTaskNumberIfNewTask() {
+        guard autofocusTaskNumber, !didAutofocusTaskNumber else { return }
+        didAutofocusTaskNumber = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            if focusedField == nil {
+                focusedField = .taskNumber
+            }
+        }
     }
 
     private func restoreActiveEditorIfNeeded() {
@@ -660,6 +680,17 @@ struct VitalsEntryEditor: View {
     /// reading recorded earlier — even after the scribe starts filling it in.
     @State private var startedBlank = false
     @State private var prefillConfigured = false
+    @FocusState private var focusedField: VitalsField?
+
+    /// Ordered numeric fields the keyboard toolbar's Previous / Next step
+    /// through. Declaration order matches the on-screen order; categorical
+    /// picker rows are intentionally excluded since they don't use the keyboard.
+    private enum VitalsField: Hashable, CaseIterable {
+        case heartRate, systolic, diastolic, oxygenSaturation, respiratoryRate, temperature
+        case gcsEye, gcsVerbal, gcsMotor
+        case leftPupilSize, rightPupilSize
+        case pain
+    }
 
     /// The reading to copy from, resolved live so backdating this entry's
     /// timestamp re-picks the correct chronological predecessor.
@@ -684,18 +715,17 @@ struct VitalsEntryEditor: View {
                 }
 
                 Section("Cardiorespiratory") {
-                    intRow("Heart rate (bpm)", \.heartRate)
-                    intRow("Systolic BP", \.systolicBloodPressure)
-                    intRow("Diastolic BP", \.diastolicBloodPressure)
-                    intRow("SpO₂ (%)", \.oxygenSaturation, in: 0...100)
-                    intRow("Respiratory rate", \.respiratoryRate)
-                    decimalRow("Temperature (°C)", "temperature", \.temperature)
+                    intRow("Heart rate (bpm)", \.heartRate, field: .heartRate)
+                    bloodPressureRow()
+                    intRow("SpO₂ (%)", \.oxygenSaturation, field: .oxygenSaturation, in: 0...100)
+                    intRow("Respiratory rate", \.respiratoryRate, field: .respiratoryRate)
+                    decimalRow("Temperature (°C)", "temperature", \.temperature, field: .temperature)
                 }
 
                 Section("Glasgow Coma Scale") {
-                    intRow("Eye (1–4)", \.gcsEye, in: VitalsRange.gcsEye)
-                    intRow("Verbal (1–5)", \.gcsVerbal, in: VitalsRange.gcsVerbal)
-                    intRow("Motor (1–6)", \.gcsMotor, in: VitalsRange.gcsMotor)
+                    intRow("Eye (1–4)", \.gcsEye, field: .gcsEye, in: VitalsRange.gcsEye)
+                    intRow("Verbal (1–5)", \.gcsVerbal, field: .gcsVerbal, in: VitalsRange.gcsVerbal)
+                    intRow("Motor (1–6)", \.gcsMotor, field: .gcsMotor, in: VitalsRange.gcsMotor)
                     LabeledContent("Total", value: entry.gcsTotal.map { String($0) } ?? "—")
                         .font(.body.weight(.semibold))
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -704,14 +734,14 @@ struct VitalsEntryEditor: View {
                 }
 
                 Section("Pupils") {
-                    decimalRow("Left size (mm)", "leftPupilSize", \.leftPupilSize)
+                    decimalRow("Left size (mm)", "leftPupilSize", \.leftPupilSize, field: .leftPupilSize)
                     optionRow("Left reactivity", \.leftPupilReactivity, options: VitalsFieldOptions.pupilReactivity)
-                    decimalRow("Right size (mm)", "rightPupilSize", \.rightPupilSize)
+                    decimalRow("Right size (mm)", "rightPupilSize", \.rightPupilSize, field: .rightPupilSize)
                     optionRow("Right reactivity", \.rightPupilReactivity, options: VitalsFieldOptions.pupilReactivity)
                 }
 
                 Section("Other") {
-                    intRow("Pain (0–10)", \.painScore, in: VitalsRange.pain)
+                    intRow("Pain (0–10)", \.painScore, field: .pain, in: VitalsRange.pain)
                     optionRow("Capillary refill", \.capillaryRefill, options: VitalsFieldOptions.capillaryRefill)
                     optionRow("LOC / AVPU", \.levelOfConsciousness, options: VitalsFieldOptions.levelOfConsciousness)
                 }
@@ -746,6 +776,29 @@ struct VitalsEntryEditor: View {
                         }
                     }
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button("Done") {
+                        focusedField = nil
+                    }
+
+                    Spacer()
+
+                    Button {
+                        focusAdjacentField(forward: false)
+                    } label: {
+                        Image(systemName: "chevron.up")
+                    }
+                    .disabled(!canFocusField(forward: false))
+                    .accessibilityLabel("Previous field")
+
+                    Button {
+                        focusAdjacentField(forward: true)
+                    } label: {
+                        Image(systemName: "chevron.down")
+                    }
+                    .disabled(!canFocusField(forward: true))
+                    .accessibilityLabel("Next field")
+                }
             }
             .interactiveDismissDisabled(entry.isDraft)
             .task {
@@ -755,6 +808,22 @@ struct VitalsEntryEditor: View {
                 }
             }
         }
+    }
+
+    // MARK: - Keyboard field navigation
+
+    private func canFocusField(forward: Bool) -> Bool {
+        guard let current = focusedField,
+              let index = VitalsField.allCases.firstIndex(of: current) else { return false }
+        return forward ? index + 1 < VitalsField.allCases.count : index > 0
+    }
+
+    private func focusAdjacentField(forward: Bool) {
+        guard let current = focusedField,
+              let index = VitalsField.allCases.firstIndex(of: current) else { return }
+        let target = forward ? index + 1 : index - 1
+        guard VitalsField.allCases.indices.contains(target) else { return }
+        focusedField = VitalsField.allCases[target]
     }
 
     // MARK: - Prefill
@@ -796,6 +865,7 @@ struct VitalsEntryEditor: View {
     private func intRow(
         _ title: String,
         _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Int?>,
+        field: VitalsField,
         in range: ClosedRange<Int>? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -803,8 +873,43 @@ struct VitalsEntryEditor: View {
             TextField(title, text: intField(keyPath, in: range))
                 .keyboardType(.numberPad)
                 .font(.body)
+                .focused($focusedField, equals: field)
                 .accessibilityLabel(title)
             suggestion(title, keyPath) { String($0) }
+        }
+        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+
+    /// Systolic and diastolic on one line, separated by a slash — the way
+    /// blood pressure is spoken and written (e.g. 120/80). The two values
+    /// remain independent stored fields.
+    private func bloodPressureRow() -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            fieldLabel("Blood pressure (mmHg)")
+            HStack(spacing: 10) {
+                TextField("Systolic", text: intField(\.systolicBloodPressure))
+                    .keyboardType(.numberPad)
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .focused($focusedField, equals: .systolic)
+                    .accessibilityLabel("Systolic blood pressure")
+                Text("/")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                TextField("Diastolic", text: intField(\.diastolicBloodPressure))
+                    .keyboardType(.numberPad)
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .focused($focusedField, equals: .diastolic)
+                    .accessibilityLabel("Diastolic blood pressure")
+            }
+            HStack(spacing: 16) {
+                suggestion("Systolic BP", \.systolicBloodPressure) { String($0) }
+                suggestion("Diastolic BP", \.diastolicBloodPressure) { String($0) }
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
     }
@@ -812,13 +917,15 @@ struct VitalsEntryEditor: View {
     private func decimalRow(
         _ title: String,
         _ key: String,
-        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Double?>
+        _ keyPath: ReferenceWritableKeyPath<VitalsEntry, Double?>,
+        field: VitalsField
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             fieldLabel(title)
             TextField(title, text: decimalField(key, keyPath))
                 .keyboardType(.decimalPad)
                 .font(.body)
+                .focused($focusedField, equals: field)
                 .accessibilityLabel(title)
             suggestion(title, keyPath) { String($0) }
         }
