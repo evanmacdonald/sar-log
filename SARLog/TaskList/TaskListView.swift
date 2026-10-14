@@ -29,6 +29,7 @@ struct TaskListContent: View {
     @State private var pendingDeletion: SARTask?
     @State private var resumeVitalsEntryID: UUID?
     @State private var didRestorePath = false
+    @State private var newlyCreatedTaskID: UUID?
 
     var body: some View {
         NavigationStack(path: navigationPath) {
@@ -43,7 +44,8 @@ struct TaskListContent: View {
             .navigationDestination(for: SARTask.self) { task in
                 TaskDetailView(
                     task: task,
-                    initialVitalsEntryID: resumeVitalsEntryID
+                    initialVitalsEntryID: resumeVitalsEntryID,
+                    autofocusTaskNumber: task.id == newlyCreatedTaskID
                 ) {
                     resumeVitalsEntryID = nil
                 }
@@ -102,6 +104,9 @@ struct TaskListContent: View {
             set: { newValue in
                 path = newValue
                 selectedTaskIDString = TaskSceneRestoration.storageValue(for: newValue.last)
+                if newValue.isEmpty {
+                    newlyCreatedTaskID = nil
+                }
             }
         )
     }
@@ -177,6 +182,7 @@ struct TaskListContent: View {
     private var newTaskButton: some View {
         Button {
             if let task = model.createTask() {
+                newlyCreatedTaskID = task.id
                 navigationPath.wrappedValue.append(task)
             }
         } label: {

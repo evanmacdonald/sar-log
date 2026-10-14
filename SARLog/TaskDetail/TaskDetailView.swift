@@ -3,6 +3,7 @@ import SwiftUI
 struct TaskDetailView: View {
     let task: SARTask
     var initialVitalsEntryID: UUID?
+    var autofocusTaskNumber: Bool = false
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.modelContext) private var modelContext
     @State private var model: TaskDetailViewModel?
@@ -13,6 +14,7 @@ struct TaskDetailView: View {
                 TaskDetailContent(
                     model: model,
                     initialVitalsEntryID: initialVitalsEntryID,
+                    autofocusTaskNumber: autofocusTaskNumber,
                     onInitialVitalsEntryPresented: onInitialVitalsEntryPresented
                 )
             } else {
@@ -30,6 +32,7 @@ struct TaskDetailView: View {
 struct TaskDetailContent: View {
     @Bindable var model: TaskDetailViewModel
     var initialVitalsEntryID: UUID?
+    var autofocusTaskNumber: Bool = false
     var onInitialVitalsEntryPresented: () -> Void = {}
     @Environment(\.dismiss) private var dismiss
     @SceneStorage("TaskDetail.focusedField") private var focusedFieldRawValue = ""
@@ -46,6 +49,7 @@ struct TaskDetailContent: View {
     @State private var pdfShareItem: PDFShareItem?
     @State private var didPresentInitialVitalsEntry = false
     @State private var didRestoreEditor = false
+    @State private var didAutofocusTaskNumber = false
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -120,6 +124,7 @@ struct TaskDetailContent: View {
             presentInitialVitalsEntryIfNeeded()
             restoreFocusedFieldIfNeeded()
             restoreActiveEditorIfNeeded()
+            focusTaskNumberIfNewTask()
         }
         .onChange(of: initialVitalsEntryID) { _, _ in
             didPresentInitialVitalsEntry = false
@@ -338,6 +343,21 @@ struct TaskDetailContent: View {
         else { return }
 
         focusedField = restoredField
+    }
+
+    /// On a freshly created task, place the cursor in the Task # field so the
+    /// scribe can start typing immediately. Runs once, and never steals focus
+    /// if the scribe has already tapped another field. The small delay lets the
+    /// push navigation settle so the focus request isn't dropped mid-transition.
+    private func focusTaskNumberIfNewTask() {
+        guard autofocusTaskNumber, !didAutofocusTaskNumber else { return }
+        didAutofocusTaskNumber = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            if focusedField == nil {
+                focusedField = .taskNumber
+            }
+        }
     }
 
     private func restoreActiveEditorIfNeeded() {
