@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — SAR Task Log</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+<header>
+<h1>Privacy policy</h1>
+<p class="subtitle">SAR Task Log · effective 2026-10-15</p>
+</header>
+
+<p>SAR Task Log is a logging tool for British Columbia search and rescue (SAR) volunteers. This policy explains what the app does and does not do with your data. It is written in plain language because that is the point.</p>
+
+<h2>Short version</h2>
+<p>The app collects nothing. Everything you enter stays on your device. There are no accounts, no sign-in, no analytics, no advertising identifiers, no third-party SDKs, and no network calls beyond the Apple services described below.</p>
+
+<h2>What the app stores</h2>
+<p>When you create a task, the app writes task numbers, subject names, locations, scribe names, timeline events, vitals, and notes to the device’s local database (Apple SwiftData). That data lives in the app’s container on your device.</p>
+
+<h2>Device backup</h2>
+<p>If you back up your iPhone to iCloud or to a computer, the app’s local database is included in that device backup, because the app does not mark its storage as excluded from backup. This is deliberate: a dead or lost phone should not destroy a SAR record. The backup is governed by <a href="https://www.apple.com/legal/privacy/">Apple’s own privacy policy</a>, not by SAR Task Log. The app itself never uploads your data anywhere.</p>
+
+<h2>PDF export</h2>
+<p>When you export a task as a PDF, the file is generated on the device and handed to the iOS share sheet. Where that PDF goes next — AirDrop, Mail, Files, Print, another app — is your choice and is handled by iOS and the destination app, not by SAR Task Log.</p>
+
+<h2>Map previews</h2>
+<p>When the location field holds a parseable coordinate, the app can show a static preview of that point using Apple MapKit. MapKit may fetch map tiles from Apple’s servers to render the preview. No device location, task data, scribe name, subject name, or account identifier is attached to those tile requests. If the device is offline, MapKit falls back to cached tiles. The app never reads the device’s GPS or any other location sensor.</p>
+
+<h2>What the app does not do</h2>
+<ul>
+<li>It does not create an account.</li>
+<li>It does not use advertising identifiers or any tracking framework.</li>
+<li>It does not include any third-party analytics, crash-reporting, or SDK.</li>
+<li>It does not transmit task data, subject data, or vitals to any server.</li>
+<li>It does not read your contacts, calendar, photos, microphone, or camera.</li>
+<li>It does not read the device’s GPS.</li>
+</ul>
+
+<h2>Children</h2>
+<p>The app is a professional tool for adult SAR volunteers. It is not directed at children and does not knowingly collect information from them.</p>
+
+<h2>Changes</h2>
+<p>If this policy changes, the new effective date will appear at the top of this page.</p>
+
+<h2>Contact</h2>
+<p>Questions, concerns, or data-access requests: <a href="mailto:evan.m.macdonald@gmail.com">evan.m.macdonald@gmail.com</a>, or open an issue at <a href="https://github.com/evanmacdonald/sar-log/issues">github.com/evanmacdonald/sar-log/issues</a>.</p>
+
+<footer>
+<nav>
+<a href="index.html">Home</a>
+<a href="support.html">Support</a>
+</nav>
+</footer>
+</div>
+</body>
+</html>
