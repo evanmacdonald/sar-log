@@ -474,6 +474,23 @@ final class TaskDetailViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testClosedTaskBlocksVitalsFinishAndDiscard() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+        let draft = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+
+        model.closeTask()
+
+        XCTAssertFalse(model.finishVitalsEntry(draft))
+        XCTAssertFalse(model.discardVitalsEntry(draft))
+
+        let fetched = try XCTUnwrap(repository.vitalsEntry(id: draft.id))
+        XCTAssertTrue(fetched.isDraft, "A draft on a closed task must stay untouched until reopened")
+    }
+
+    @MainActor
     func testReopeningTaskRestoresEditing() throws {
         let container = try SARLogModelContainer.inMemory()
         let repository = TaskRepository(context: container.mainContext)

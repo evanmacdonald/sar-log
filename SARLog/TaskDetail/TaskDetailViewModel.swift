@@ -147,6 +147,7 @@ final class TaskDetailViewModel {
 
     @discardableResult
     func finishVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        guard !isClosed else { return false }
         do {
             try repository.finalizeVitalsEntry(entry)
             refreshLogEntries()
@@ -161,6 +162,7 @@ final class TaskDetailViewModel {
 
     @discardableResult
     func discardVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        guard !isClosed else { return false }
         do {
             try repository.deleteVitalsEntry(entry)
             refreshLogEntries()
