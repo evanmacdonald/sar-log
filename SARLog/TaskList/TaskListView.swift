@@ -93,7 +93,7 @@ struct TaskListContent: View {
                     model.discardPendingVitalsDraft()
                 }
             } message: { draft in
-                Text("SAR Log stopped while a vitals entry was open for \(draft.taskTitle). Resume it or discard the in-progress entry.")
+                Text("SAR Task Log stopped while a vitals entry was open for \(draft.taskTitle). Resume it or discard the in-progress entry.")
             }
         }
     }
