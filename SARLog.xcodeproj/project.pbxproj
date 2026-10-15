@@ -32,6 +32,26 @@
 		1A2B3C4D5E6F70010000001B /* SARLogPDFReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */; };
 		1A2B3C4D5E6F70010000001C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000125 /* PrivacyInfo.xcprivacy */; };
 		1A2B3C4D5E6F7001000000F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */; };
+		1A2B3C4D5E6F700100000221 /* Coordinate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000135 /* Coordinate.swift */; };
+		1A2B3C4D5E6F700100000222 /* CoordinateFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000202 /* CoordinateFormat.swift */; };
+		1A2B3C4D5E6F700100000223 /* CoordinateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000137 /* CoordinateConverter.swift */; };
+		1A2B3C4D5E6F700100000224 /* DDConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000204 /* DDConverter.swift */; };
+		1A2B3C4D5E6F700100000225 /* DDMConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000205 /* DDMConverter.swift */; };
+		1A2B3C4D5E6F700100000226 /* DMSConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000206 /* DMSConverter.swift */; };
+		1A2B3C4D5E6F700100000227 /* UTMConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000207 /* UTMConverter.swift */; };
+		1A2B3C4D5E6F700100000228 /* MGRSConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000208 /* MGRSConverter.swift */; };
+		1A2B3C4D5E6F700100000229 /* PlusCodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000209 /* PlusCodeConverter.swift */; };
+		1A2B3C4D5E6F70010000022A /* ConverterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */; };
+		1A2B3C4D5E6F70010000022B /* LocationMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020B /* LocationMapView.swift */; };
+		1A2B3C4D5E6F70010000022C /* LocationConvertSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */; };
+		1A2B3C4D5E6F70010000022D /* CoordinateFormatDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020D /* CoordinateFormatDetectionTests.swift */; };
+		1A2B3C4D5E6F70010000022E /* ConverterViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020E /* ConverterViewModelTests.swift */; };
+		1A2B3C4D5E6F70010000022F /* DDConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020F /* DDConverterTests.swift */; };
+		1A2B3C4D5E6F700100000230 /* DDMConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000210 /* DDMConverterTests.swift */; };
+		1A2B3C4D5E6F700100000231 /* DMSConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000211 /* DMSConverterTests.swift */; };
+		1A2B3C4D5E6F700100000232 /* UTMConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000212 /* UTMConverterTests.swift */; };
+		1A2B3C4D5E6F700100000233 /* MGRSConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000213 /* MGRSConverterTests.swift */; };
+		1A2B3C4D5E6F700100000234 /* PlusCodeConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000214 /* PlusCodeConverterTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +92,26 @@
 		1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SARLogPDFReportTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700100000125 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000135 /* Coordinate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinate.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000202 /* CoordinateFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateFormat.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000137 /* CoordinateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000204 /* DDConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000205 /* DDMConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDMConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000206 /* DMSConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMSConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000207 /* UTMConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000208 /* MGRSConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MGRSConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000209 /* PlusCodeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusCodeConverter.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020B /* LocationMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMapView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationConvertSheet.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020D /* CoordinateFormatDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateFormatDetectionTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020E /* ConverterViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterViewModelTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70010000020F /* DDConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDConverterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000210 /* DDMConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDMConverterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000211 /* DMSConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DMSConverterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000212 /* UTMConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMConverterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000213 /* MGRSConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MGRSConverterTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000214 /* PlusCodeConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusCodeConverterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +149,7 @@
 				1A2B3C4D5E6F7001000000F1 /* Assets.xcassets */,
 				1A2B3C4D5E6F700100000308 /* TaskList */,
 				1A2B3C4D5E6F70010000030A /* TaskDetail */,
+				1A2B3C4D5E6F70010000030E /* Location */,
 				1A2B3C4D5E6F70010000030C /* PDFExport */,
 				1A2B3C4D5E6F700100000306 /* Persistence */,
 				1A2B3C4D5E6F700100000305 /* Support */,
@@ -217,6 +258,41 @@
 			isa = PBXGroup;
 			children = (
 				1A2B3C4D5E6F700100000124 /* SARLogPDFReportTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F70010000030E /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F700100000135 /* Coordinate.swift */,
+				1A2B3C4D5E6F700100000202 /* CoordinateFormat.swift */,
+				1A2B3C4D5E6F700100000137 /* CoordinateConverter.swift */,
+				1A2B3C4D5E6F700100000204 /* DDConverter.swift */,
+				1A2B3C4D5E6F700100000205 /* DDMConverter.swift */,
+				1A2B3C4D5E6F700100000206 /* DMSConverter.swift */,
+				1A2B3C4D5E6F700100000207 /* UTMConverter.swift */,
+				1A2B3C4D5E6F700100000208 /* MGRSConverter.swift */,
+				1A2B3C4D5E6F700100000209 /* PlusCodeConverter.swift */,
+				1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */,
+				1A2B3C4D5E6F70010000020B /* LocationMapView.swift */,
+				1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */,
+				1A2B3C4D5E6F70010000030F /* Tests */,
+			);
+			path = Location;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F70010000030F /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F70010000020D /* CoordinateFormatDetectionTests.swift */,
+				1A2B3C4D5E6F70010000020E /* ConverterViewModelTests.swift */,
+				1A2B3C4D5E6F70010000020F /* DDConverterTests.swift */,
+				1A2B3C4D5E6F700100000210 /* DDMConverterTests.swift */,
+				1A2B3C4D5E6F700100000211 /* DMSConverterTests.swift */,
+				1A2B3C4D5E6F700100000212 /* UTMConverterTests.swift */,
+				1A2B3C4D5E6F700100000213 /* MGRSConverterTests.swift */,
+				1A2B3C4D5E6F700100000214 /* PlusCodeConverterTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -338,6 +414,18 @@
 				1A2B3C4D5E6F700100000018 /* SARLogPDFReport.swift in Sources */,
 				1A2B3C4D5E6F700100000019 /* SARLogPDFRenderer.swift in Sources */,
 				1A2B3C4D5E6F70010000001A /* PDFShareSheet.swift in Sources */,
+				1A2B3C4D5E6F700100000221 /* Coordinate.swift in Sources */,
+				1A2B3C4D5E6F700100000222 /* CoordinateFormat.swift in Sources */,
+				1A2B3C4D5E6F700100000223 /* CoordinateConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000224 /* DDConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000225 /* DDMConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000226 /* DMSConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000227 /* UTMConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000228 /* MGRSConverter.swift in Sources */,
+				1A2B3C4D5E6F700100000229 /* PlusCodeConverter.swift in Sources */,
+				1A2B3C4D5E6F70010000022A /* ConverterViewModel.swift in Sources */,
+				1A2B3C4D5E6F70010000022B /* LocationMapView.swift in Sources */,
+				1A2B3C4D5E6F70010000022C /* LocationConvertSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -351,6 +439,14 @@
 				1A2B3C4D5E6F70010000000E /* TaskRowPresentationTests.swift in Sources */,
 				1A2B3C4D5E6F700100000013 /* TaskDetailViewModelTests.swift in Sources */,
 				1A2B3C4D5E6F70010000001B /* SARLogPDFReportTests.swift in Sources */,
+				1A2B3C4D5E6F70010000022D /* CoordinateFormatDetectionTests.swift in Sources */,
+				1A2B3C4D5E6F70010000022E /* ConverterViewModelTests.swift in Sources */,
+				1A2B3C4D5E6F70010000022F /* DDConverterTests.swift in Sources */,
+				1A2B3C4D5E6F700100000230 /* DDMConverterTests.swift in Sources */,
+				1A2B3C4D5E6F700100000231 /* DMSConverterTests.swift in Sources */,
+				1A2B3C4D5E6F700100000232 /* UTMConverterTests.swift in Sources */,
+				1A2B3C4D5E6F700100000233 /* MGRSConverterTests.swift in Sources */,
+				1A2B3C4D5E6F700100000234 /* PlusCodeConverterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

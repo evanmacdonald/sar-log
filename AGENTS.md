@@ -67,9 +67,11 @@ them; if one feels wrong, open a discussion before coding.
 ├── README.md         # quick start + project links
 ├── SARLog.xcodeproj  # Xcode project
 └── SARLog/           # SwiftUI app source
+    ├── Location/     # coordinate parse/format + map preview + co-located Tests/
+    ├── PDFExport/    # PDF renderer + share sheet + co-located Tests/
     ├── Persistence/  # SwiftData models / repository + co-located Tests/
     ├── Support/      # shared UI / helper code
-    ├── TaskDetail/   # task detail screens
+    ├── TaskDetail/   # task detail screens + co-located Tests/
     ├── TaskList/     # task list screens / logic + co-located Tests/
     └── Tests/        # app-level logic tests
 ```

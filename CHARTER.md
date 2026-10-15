@@ -114,14 +114,22 @@ Design the PDF to mirror the team's current paper notebook / official PEP form.
 - No multi-device sync
 - No Apple Watch companion
 - No cloud anything
-- No map view or location/coordinate linking of any kind. Mapping and
-  navigation are handled by separate software the team already uses; the
-  location field is free-text context only (e.g. "Eagle Ridge, Coquitlam")
 - No voice input for notes
 - No audit trail on edits
 - No custom-event personal library
 - No PDF signature block
 - No Android (SwiftUI choice forecloses this without a rewrite)
+
+### Reversed later in v1
+
+- **~~No map view or location/coordinate linking of any kind~~.**
+  Reversed in PR 17: when the location field holds a parseable coordinate
+  (DD / DDM / DMS / UTM / MGRS / Plus Code), the user can convert between
+  formats or preview the point on an offline-rendered Apple map inside the
+  app. Live GPS, routing, and tracking stay out of scope; the location
+  field remains free text when it isn't a coordinate (e.g.
+  "Eagle Ridge, Coquitlam"). This still uses no third-party SDKs — MapKit
+  ships with iOS — and no network calls.
 
 ## 10. v1 must-haves not in original brief
 
