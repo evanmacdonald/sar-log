@@ -186,8 +186,8 @@ enum SARLogPDFRenderer {
     static func data(for report: SARLogPDFReport) -> Data {
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = [
-            kCGPDFContextCreator as String: "SAR Log",
-            kCGPDFContextTitle as String: "SAR Log \(displayOrBlank(report.taskNumber))"
+            kCGPDFContextCreator as String: "SAR Task Log",
+            kCGPDFContextTitle as String: "SAR Task Log \(displayOrBlank(report.taskNumber))"
         ]
 
         let renderer = UIGraphicsPDFRenderer(
