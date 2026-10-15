@@ -434,4 +434,63 @@ final class TaskDetailViewModelTests: XCTestCase {
         XCTAssertTrue(try repository.vitalsEntries(taskId: task.id).isEmpty)
         XCTAssertNil(model.errorMessage)
     }
+
+    @MainActor
+    func testClosedTaskBlocksEditsAndAdditions() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        // Seed one of each entry while the task is still open.
+        let event = try XCTUnwrap(
+            model.addCustomTimelineEvent(label: "On scene", at: Date(timeIntervalSince1970: 100))
+        )
+        let entry = try XCTUnwrap(model.addVitalsEntry(at: Date(timeIntervalSince1970: 100)))
+        model.finishVitalsEntry(entry)
+
+        let originalNumber = task.taskNumber
+        let originalNotes = task.notes
+
+        model.closeTask()
+        XCTAssertTrue(model.isClosed)
+
+        // Field edits are ignored while closed.
+        model.updateTaskNumber("SHOULD-NOT-SAVE")
+        model.updateNotes("nope")
+        XCTAssertEqual(try repository.task(id: task.id)?.taskNumber, originalNumber)
+        XCTAssertEqual(try repository.task(id: task.id)?.notes, originalNotes)
+
+        // Adds are blocked.
+        model.addPredefinedTimelineEvent(try XCTUnwrap(model.predefinedTimelineEvents.first))
+        XCTAssertNil(model.addCustomTimelineEvent(label: "blocked"))
+        XCTAssertNil(model.addVitalsEntry())
+        XCTAssertEqual(model.timelineEvents.map(\.id), [event.id])
+        XCTAssertEqual(model.vitalsEntries.map(\.id), [entry.id])
+
+        // Edits to existing entries are blocked.
+        model.updateTimelineEvent(event, label: "changed")
+        XCTAssertEqual(try repository.timelineEvent(id: event.id)?.label, "On scene")
+    }
+
+    @MainActor
+    func testReopeningTaskRestoresEditing() throws {
+        let container = try SARLogModelContainer.inMemory()
+        let repository = TaskRepository(context: container.mainContext)
+        let task = try repository.createTask()
+        let model = TaskDetailViewModel(task: task, repository: repository)
+
+        model.closeTask()
+        model.updateTaskNumber("blocked")
+        XCTAssertNotEqual(try repository.task(id: task.id)?.taskNumber, "blocked")
+
+        model.reopenTask()
+        XCTAssertFalse(model.isClosed)
+
+        model.updateTaskNumber("2026-010")
+        XCTAssertEqual(try repository.task(id: task.id)?.taskNumber, "2026-010")
+
+        let event = try XCTUnwrap(model.addCustomTimelineEvent(label: "On scene"))
+        XCTAssertEqual(model.timelineEvents.map(\.id), [event.id])
+    }
 }
