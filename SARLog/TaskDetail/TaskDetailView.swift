@@ -578,6 +578,11 @@ struct TaskDetailContent: View {
             .accessibilityLabel("Convert location format")
         }
         .padding(.vertical, 2)
+        // Without this, the row separator inherits the leading inset of
+        // the first button's content, leaving a visible gap on the left.
+        // Anchor it to the row's inset-grouped edge so it matches the
+        // separators above and below it.
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
     }
 }
 
