@@ -25,6 +25,12 @@ final class TaskDetailViewModel {
         PredefinedTimelineEvent.all
     }
 
+    /// A closed task is read-only. All edit/add mutations are blocked until the
+    /// task is reopened; only close/reopen and delete remain available.
+    var isClosed: Bool {
+        task.closedAt != nil
+    }
+
     func refreshTimeline() {
         refreshLogEntries()
     }
@@ -141,6 +147,7 @@ final class TaskDetailViewModel {
 
     @discardableResult
     func finishVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        guard !isClosed else { return false }
         do {
             try repository.finalizeVitalsEntry(entry)
             refreshLogEntries()
@@ -155,6 +162,7 @@ final class TaskDetailViewModel {
 
     @discardableResult
     func discardVitalsEntry(_ entry: VitalsEntry) -> Bool {
+        guard !isClosed else { return false }
         do {
             try repository.deleteVitalsEntry(entry)
             refreshLogEntries()
@@ -168,31 +176,31 @@ final class TaskDetailViewModel {
     }
 
     func updateTaskNumber(_ value: String) {
-        updateTask {
+        updateEditableField {
             try repository.update(task, taskNumber: value)
         }
     }
 
     func updateSubjectName(_ value: String) {
-        updateTask {
+        updateEditableField {
             try repository.update(task, subjectName: value)
         }
     }
 
     func updateLocation(_ value: String) {
-        updateTask {
+        updateEditableField {
             try repository.update(task, location: value)
         }
     }
 
     func updateScribeName(_ value: String) {
-        updateTask {
+        updateEditableField {
             try repository.update(task, scribeName: value)
         }
     }
 
     func updateNotes(_ value: String) {
-        updateTask {
+        updateEditableField {
             try repository.update(task, notes: value)
         }
     }
@@ -242,6 +250,7 @@ final class TaskDetailViewModel {
 
     @discardableResult
     private func performMutation<Result>(_ operation: () throws -> Result) -> Result? {
+        guard !isClosed else { return nil }
         do {
             let result = try operation()
             refreshLogEntries()
@@ -252,6 +261,13 @@ final class TaskDetailViewModel {
             errorMessage = "Change could not be saved. Try again before leaving this screen."
             return nil
         }
+    }
+
+    /// Field edits that must be blocked on a closed task. Close/reopen use
+    /// `updateTask` directly so they stay available regardless of state.
+    private func updateEditableField(_ operation: () throws -> Void) {
+        guard !isClosed else { return }
+        updateTask(operation)
     }
 
     private func updateTask(_ operation: () throws -> Void) {

@@ -69,6 +69,7 @@ struct TaskDetailContent: View {
                     .frame(minHeight: 144, alignment: .top)
                     .textInputAutocapitalization(.sentences)
                     .focused($focusedField, equals: .notes)
+                    .disabled(model.isClosed)
                     .accessibilityLabel("Notes")
             }
             Section("Timeline") {
@@ -78,13 +79,17 @@ struct TaskDetailContent: View {
                         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
                 } else {
                     ForEach(model.timelineEvents) { event in
-                        Button {
-                            editingEventSheet.wrappedValue = event
-                        } label: {
+                        if model.isClosed {
                             TimelineEventRow(event: event)
+                        } else {
+                            Button {
+                                editingEventSheet.wrappedValue = event
+                            } label: {
+                                TimelineEventRow(event: event)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityHint("Edit event")
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Edit event")
                     }
                 }
             }
@@ -95,13 +100,17 @@ struct TaskDetailContent: View {
                         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
                 } else {
                     ForEach(model.vitalsEntries) { entry in
-                        Button {
-                            editingVitalsEntrySheet.wrappedValue = entry
-                        } label: {
+                        if model.isClosed {
                             VitalsEntryRow(entry: entry)
+                        } else {
+                            Button {
+                                editingVitalsEntrySheet.wrappedValue = entry
+                            } label: {
+                                VitalsEntryRow(entry: entry)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityHint("Edit vitals")
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityHint("Edit vitals")
                     }
                 }
             }
@@ -210,7 +219,10 @@ struct TaskDetailContent: View {
     /// and frees vertical space so the field being typed in stays visible.
     private var bottomActionPanel: some View {
         Group {
-            if focusedField != nil {
+            if model.isClosed {
+                closedTaskBar
+                    .padding()
+            } else if focusedField != nil {
                 keyboardDismissBar
                     .padding(.horizontal)
                     .padding(.vertical, 6)
@@ -229,6 +241,27 @@ struct TaskDetailContent: View {
         .background(.bar)
         .animation(.easeInOut(duration: 0.2), value: focusedField)
         .animation(.easeInOut(duration: 0.2), value: isQuickEntryCollapsed)
+        .animation(.easeInOut(duration: 0.2), value: model.isClosed)
+    }
+
+    /// Shown instead of the quick-entry panel once a task is closed. The task
+    /// is read-only, so the only action offered is reopening it to edit again.
+    private var closedTaskBar: some View {
+        VStack(spacing: 8) {
+            Label("This task is closed — read only", systemImage: "lock.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Button {
+                model.reopenTask()
+            } label: {
+                Label("Reopen to edit", systemImage: "arrow.uturn.backward.circle")
+                    .font(.headline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 56)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityLabel("Reopen task to edit")
+        }
     }
 
     /// Slim handle to collapse the quick-entry panel (for a full-page view of
@@ -492,6 +525,7 @@ struct TaskDetailContent: View {
                 .font(.body)
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: field)
+                .disabled(model.isClosed)
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
