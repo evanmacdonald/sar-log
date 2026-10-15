@@ -44,6 +44,7 @@
 		1A2B3C4D5E6F70010000022A /* ConverterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */; };
 		1A2B3C4D5E6F70010000022B /* LocationMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020B /* LocationMapView.swift */; };
 		1A2B3C4D5E6F70010000022C /* LocationConvertSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */; };
+		1A2B3C4D5E6F70010000023A /* QuoteNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700100000139 /* QuoteNormalizer.swift */; };
 		1A2B3C4D5E6F70010000022D /* CoordinateFormatDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020D /* CoordinateFormatDetectionTests.swift */; };
 		1A2B3C4D5E6F70010000022E /* ConverterViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020E /* ConverterViewModelTests.swift */; };
 		1A2B3C4D5E6F70010000022F /* DDConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70010000020F /* DDConverterTests.swift */; };
@@ -104,6 +105,7 @@
 		1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterViewModel.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000020B /* LocationMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMapView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationConvertSheet.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700100000139 /* QuoteNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteNormalizer.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000020D /* CoordinateFormatDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateFormatDetectionTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000020E /* ConverterViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterViewModelTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F70010000020F /* DDConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDConverterTests.swift; sourceTree = "<group>"; };
@@ -277,6 +279,7 @@
 				1A2B3C4D5E6F70010000020A /* ConverterViewModel.swift */,
 				1A2B3C4D5E6F70010000020B /* LocationMapView.swift */,
 				1A2B3C4D5E6F70010000020C /* LocationConvertSheet.swift */,
+				1A2B3C4D5E6F700100000139 /* QuoteNormalizer.swift */,
 				1A2B3C4D5E6F70010000030F /* Tests */,
 			);
 			path = Location;
@@ -426,6 +429,7 @@
 				1A2B3C4D5E6F70010000022A /* ConverterViewModel.swift in Sources */,
 				1A2B3C4D5E6F70010000022B /* LocationMapView.swift in Sources */,
 				1A2B3C4D5E6F70010000022C /* LocationConvertSheet.swift in Sources */,
+				1A2B3C4D5E6F70010000023A /* QuoteNormalizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

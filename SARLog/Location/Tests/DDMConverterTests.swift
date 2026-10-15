@@ -55,6 +55,18 @@ final class DDMConverterTests: XCTestCase {
         ))
     }
 
+    /// iOS smart punctuation rewrites straight `'` to curly `\u{2019}` in
+    /// SwiftUI text fields. The parse must survive that or the Map/Convert
+    /// row never appears for anything typed on-device.
+    func testParseDirectionalWithCurlyApostrophes() {
+        let coord = DDMConverter.parse("30 17.11\u{2019}N 095 28.07\u{2019}W")
+        XCTAssertNotNil(coord)
+        XCTAssertTrue(coord!.isEqual(
+            to: Coordinate(latitude: 30.285167, longitude: -95.467833),
+            accuracy: 1e-4
+        ))
+    }
+
     func testFormatNorthEast() {
         let result = DDMConverter.format(Coordinate(latitude: 41.40338, longitude: 2.17403))
         XCTAssertEqual(result, "41°24.2028'N, 2°10.4418'E")

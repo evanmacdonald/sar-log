@@ -2,9 +2,10 @@ import Foundation
 
 enum DDMConverter: CoordinateConverter {
     static func parse(_ input: String) -> Coordinate? {
-        if let result = parseStandard(input) { return result }
-        if let result = parseDirectional(input) { return result }
-        return parseLenient(input)
+        let normalized = QuoteNormalizer.normalize(input)
+        if let result = parseStandard(normalized) { return result }
+        if let result = parseDirectional(normalized) { return result }
+        return parseLenient(normalized)
     }
 
     /// Accepts whitespace-separated DDM with explicit hemisphere letters, e.g.

@@ -2,8 +2,9 @@ import Foundation
 
 enum DMSConverter: CoordinateConverter {
     static func parse(_ input: String) -> Coordinate? {
-        if let result = parseStandard(input) { return result }
-        return parseLenient(input)
+        let normalized = QuoteNormalizer.normalize(input)
+        if let result = parseStandard(normalized) { return result }
+        return parseLenient(normalized)
     }
 
     private static func parseStandard(_ input: String) -> Coordinate? {
