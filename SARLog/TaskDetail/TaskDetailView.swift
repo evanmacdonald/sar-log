@@ -50,6 +50,8 @@ struct TaskDetailContent: View {
     @State private var didPresentInitialVitalsEntry = false
     @State private var didRestoreEditor = false
     @State private var didAutofocusTaskNumber = false
+    @State private var isShowingLocationConverter = false
+    @State private var mapCoordinate: Coordinate?
     private let eventButtonColumns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -61,6 +63,9 @@ struct TaskDetailContent: View {
                 detailTextField("Task #", text: taskNumber, field: .taskNumber)
                 detailTextField("Subject", text: subjectName, field: .subjectName)
                 detailTextField("Location", text: location, field: .location)
+                if let parsedLocation {
+                    locationCoordinateActions(for: parsedLocation)
+                }
                 detailTextField("Scribe", text: scribeName, field: .scribeName)
             }
             Section("Notes") {
@@ -158,6 +163,14 @@ struct TaskDetailContent: View {
         }
         .sheet(item: $pdfShareItem) { item in
             PDFShareSheet(url: item.url)
+        }
+        .sheet(isPresented: $isShowingLocationConverter) {
+            LocationConvertSheet(initialText: model.task.location) { newValue in
+                model.updateLocation(newValue)
+            }
+        }
+        .fullScreenCover(item: $mapCoordinate) { coord in
+            LocationMapView(coordinate: coord)
         }
         .confirmationDialog(
             "Delete this task?",
@@ -529,6 +542,42 @@ struct TaskDetailContent: View {
                 .accessibilityLabel(title)
         }
         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+    }
+
+    /// Non-nil when the Location text parses as a known coordinate format;
+    /// drives whether the Map / Convert row appears.
+    private var parsedLocation: Coordinate? {
+        let text = model.task.location.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, let format = CoordinateFormat.detect(text) else { return nil }
+        return format.converter.parse(text)
+    }
+
+    private func locationCoordinateActions(for coordinate: Coordinate) -> some View {
+        HStack(spacing: 10) {
+            Button {
+                focusedField = nil
+                mapCoordinate = coordinate
+            } label: {
+                Label("Map", systemImage: "map")
+                    .font(.callout.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityLabel("Show location on map")
+
+            Button {
+                focusedField = nil
+                isShowingLocationConverter = true
+            } label: {
+                Label("Convert", systemImage: "arrow.left.arrow.right")
+                    .font(.callout.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+            .disabled(model.isClosed)
+            .accessibilityLabel("Convert location format")
+        }
+        .padding(.vertical, 2)
     }
 }
 

@@ -41,9 +41,13 @@ against that.
 These come from the charter and apply to every PR. Don't relitigate
 them; if one feels wrong, open a discussion before coding.
 
-- **No third-party SDKs.** No analytics, no telemetry, no networking.
-  Data lives on the device only.
-- **No accounts, no cloud, no GPS, no Android.**
+- **No third-party SDKs.** No analytics, no telemetry, no third-party
+  network calls. User data lives on the device only. First-party Apple
+  frameworks that reach Apple's own servers (e.g. MapKit tile fetches
+  for the PR 17 location preview) are allowed — no device location,
+  task data, or account identifier is attached. No other outbound
+  traffic.
+- **No accounts, no cloud, no live GPS, no Android.**
 - **Auto-save on every tap / keystroke.** No Save button anywhere.
 - **No UI tests in v1.** XCTest covers logic only. Extract logic from
   views into testable types when needed.
@@ -67,9 +71,11 @@ them; if one feels wrong, open a discussion before coding.
 ├── README.md         # quick start + project links
 ├── SARLog.xcodeproj  # Xcode project
 └── SARLog/           # SwiftUI app source
+    ├── Location/     # coordinate parse/format + map preview + co-located Tests/
+    ├── PDFExport/    # PDF renderer + share sheet + co-located Tests/
     ├── Persistence/  # SwiftData models / repository + co-located Tests/
     ├── Support/      # shared UI / helper code
-    ├── TaskDetail/   # task detail screens
+    ├── TaskDetail/   # task detail screens + co-located Tests/
     ├── TaskList/     # task list screens / logic + co-located Tests/
     └── Tests/        # app-level logic tests
 ```

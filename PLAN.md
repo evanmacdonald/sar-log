@@ -97,8 +97,11 @@ PRs; flag as you reach them.
    (auto-fills future tasks), or fresh entry each task? Affects PR 5.
 2. **PEP form sample** — Evan to deliver before PR 14 can begin.
 
-_Resolved: Apple Maps / coordinate linkage — dropped entirely. The team
-uses separate mapping software, so location is free text only (charter §9)._
+_Resolved: Apple Maps / coordinate linkage — reversed in PR 17. The
+location field now surfaces an inline Map / Convert row whenever the text
+parses as a coordinate (DD / DDM / DMS / UTM / MGRS / Plus Code), ported
+from the standalone unit-converter app. Free-text location (e.g.
+"Eagle Ridge, Coquitlam") still works as before. See CHARTER.md §9._
 
 ## Explicit non-goals (v1)
 
@@ -108,15 +111,14 @@ Do not implement these in any PR. From charter §9:
 - No multi-device sync
 - No Apple Watch companion
 - No cloud anything (no accounts, no backend, no remote storage)
-- No map view and no location / coordinate linking of any kind —
-  mapping is handled by separate software; location is free text only
+- No live GPS, routing, or tracking (PR 17 added coordinate conversion
+  and a static Apple-maps preview, but the device location is never read)
 - No voice input for notes
 - No audit trail on edits
 - No custom-event personal library
 - No PDF signature block
 - No Android
 - No analytics, telemetry, or third-party SDKs
-- No GPS
 - No steppers (vitals use number pad only)
 
 ---
@@ -180,9 +182,9 @@ Do not implement these in any PR. From charter §9:
     software the team already uses.
   - Auto-save on every keystroke.
   - **Acceptance:** all fields persist live; one-handed reachable.
-  - _Note: the original Apple Maps URL-scheme link shipped in this PR
-    was removed in a later change — the app no longer interprets the
-    location field as coordinates._
+  - _History: the original Apple Maps URL-scheme link shipped in this
+    PR, was removed when the charter cut location-coord linking, then
+    was reinstated — with a richer converter — in PR 17._
 
 ### Timeline
 
@@ -296,6 +298,29 @@ Do not implement these in any PR. From charter §9:
     submission itself is operational and lives outside this plan.
   - **Acceptance:** archive build runs on a real device; visual pass
     in light and dark mode; VoiceOver navigates the primary flows.
+
+### Charter reversal
+
+- [x] **PR 17 — Location GPS converter + map preview**
+  - Reverses the charter §9 "no map / no coordinate linking" cut.
+  - Port the converter from the standalone `unit-converter` app:
+    DD / DDM / DMS / UTM / MGRS / Plus Code parse + format, auto-detect,
+    and a MapKit preview (no live location, no routing). New files land
+    under `SARLog/Location/` with co-located `Tests/`.
+  - Task detail: when the location field holds a parseable coordinate,
+    show an inline **Map** + **Convert** row directly below it. Buttons
+    are suppressed for free-text locations (e.g. "Eagle Ridge").
+  - Convert sheet pre-fills with the current location text, lets the
+    user override the detected format, and taps "Use" on any format row
+    to write that string back and dismiss. Map opens as a full-screen
+    cover with Apple Maps standard / satellite / hybrid.
+  - Map stays available on closed tasks (read-only lookup); Convert is
+    disabled when the task is closed.
+  - Still no third-party SDKs, no network, no live GPS.
+  - **Acceptance:** paste `30 17.11'N 095 28.07'W` into the Location
+    field, Map and Convert buttons appear; tapping Convert surfaces all
+    6 formats, choosing one updates the field; typing "Eagle Ridge"
+    hides the buttons again.
 
 ---
 
