@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — SAR Task Log</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+<header>
+<h1>Support</h1>
+<p class="subtitle">SAR Task Log</p>
+</header>
+
+<h2>Get help</h2>
+<p>The fastest way to report a bug or ask a question is to open an issue on GitHub: <a href="https://github.com/evanmacdonald/sar-log/issues">github.com/evanmacdonald/sar-log/issues</a>. You can also email <a href="mailto:evan.m.macdonald@gmail.com">evan.m.macdonald@gmail.com</a> — replies on evenings and weekends.</p>
+
+<p>If the bug involves data loss or a crash during a live task, please include:</p>
+<ul>
+<li>Your iPhone model and iOS version (Settings → General → About).</li>
+<li>The app version (Settings → SAR Task Log).</li>
+<li>What you were doing when it happened — the previous few taps are usually enough.</li>
+</ul>
+
+<h2>Common questions</h2>
+
+<h3 style="font-size:1rem;margin-top:1.5rem">Where did my data go?</h3>
+<p>Task data lives on your device. If you still have the device and have not deleted the app, open the Tasks list — closed tasks are kept below the active ones. Deleting the app removes its local database. iCloud or iTunes device backups should include the app’s data if the backup was taken before the deletion.</p>
+
+<h3 style="font-size:1rem;margin-top:1.5rem">Why doesn’t the app have GPS?</h3>
+<p>By design. The app is a scribe tool, not a navigation tool. Keeping GPS, location permissions, and background location out of scope keeps the app simple, keeps battery use down during a long task, and keeps the app’s privacy story clean — nothing to leak if there’s nothing to collect.</p>
+
+<h3 style="font-size:1rem;margin-top:1.5rem">Can I use it on Android?</h3>
+<p>No. The app is native SwiftUI, iOS only.</p>
+
+<h3 style="font-size:1rem;margin-top:1.5rem">Can I sync between devices?</h3>
+<p>Not in v1. One device per task is the current design (“I am the scribe”).</p>
+
+<h3 style="font-size:1rem;margin-top:1.5rem">Does the app work offline?</h3>
+<p>Yes. The only online component is the optional map tile preview when you’ve pasted a coordinate; if the device is offline, that view falls back to cached tiles. Everything else works without a signal.</p>
+
+<footer>
+<nav>
+<a href="index.html">Home</a>
+<a href="privacy.html">Privacy policy</a>
+</nav>
+</footer>
+</div>
+</body>
+</html>
