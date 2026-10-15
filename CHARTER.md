@@ -125,11 +125,14 @@ Design the PDF to mirror the team's current paper notebook / official PEP form.
 - **~~No map view or location/coordinate linking of any kind~~.**
   Reversed in PR 17: when the location field holds a parseable coordinate
   (DD / DDM / DMS / UTM / MGRS / Plus Code), the user can convert between
-  formats or preview the point on an offline-rendered Apple map inside the
-  app. Live GPS, routing, and tracking stay out of scope; the location
-  field remains free text when it isn't a coordinate (e.g.
-  "Eagle Ridge, Coquitlam"). This still uses no third-party SDKs — MapKit
-  ships with iOS — and no network calls.
+  formats or preview the point on an Apple map inside the app. Live GPS,
+  routing, and tracking stay out of scope; the location field remains free
+  text when it isn't a coordinate (e.g. "Eagle Ridge, Coquitlam").
+  No third-party SDKs — MapKit ships with iOS — and no telemetry,
+  analytics, or user-identifying traffic. MapKit may stream map tiles
+  from Apple's own servers to render the preview and will fall back to
+  cached tiles if the device is offline; no device location, task data,
+  or account identifier is attached to those requests.
 
 ## 10. v1 must-haves not in original brief
 

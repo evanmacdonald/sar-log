@@ -68,6 +68,26 @@ final class PlusCodeConverterTests: XCTestCase {
         XCTAssertTrue(parsed!.isEqual(to: original, accuracy: 1e-3))
     }
 
+    /// A well-known Plus Code must decode to its real-world location, not an
+    /// internally-consistent-but-arbitrary round-trip point. Googleplex is
+    /// the OLC spec's canonical example.
+    func testParseGoogleplexPlusCode() {
+        let parsed = PlusCodeConverter.parse("849VCWC8+R9")
+        XCTAssertNotNil(parsed)
+        XCTAssertTrue(
+            parsed!.isEqual(
+                to: Coordinate(latitude: 37.4221, longitude: -122.0841),
+                accuracy: 1e-3
+            ),
+            "Expected Googleplex (~37.4221, -122.0841), got (\(parsed!.latitude), \(parsed!.longitude))"
+        )
+    }
+
+    func testFormatGoogleplexMatchesSpec() {
+        let formatted = PlusCodeConverter.format(Coordinate(latitude: 37.4221, longitude: -122.0841))
+        XCTAssertEqual(formatted, "849VCWC8+R9")
+    }
+
     func testParseLowercaseInput() {
         let original = Coordinate(latitude: 41.40338, longitude: 2.17403)
         let code = PlusCodeConverter.format(original).lowercased()

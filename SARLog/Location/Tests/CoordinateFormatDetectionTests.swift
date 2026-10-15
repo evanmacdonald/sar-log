@@ -23,6 +23,12 @@ final class CoordinateFormatDetectionTests: XCTestCase {
         XCTAssertEqual(CoordinateFormat.detect("41°24.2028'N, 2°10.4418'E"), .ddm)
     }
 
+    func testDetectsDirectionalDDM() {
+        // The documented PR 17 acceptance input: whitespace-separated,
+        // single-tick minutes, hemisphere suffix.
+        XCTAssertEqual(CoordinateFormat.detect("30 17.11'N 095 28.07'W"), .ddm)
+    }
+
     func testDetectsUTM() {
         XCTAssertEqual(CoordinateFormat.detect("31T 430960 4583867"), .utm)
     }

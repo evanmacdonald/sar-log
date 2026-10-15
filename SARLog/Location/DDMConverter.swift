@@ -3,7 +3,43 @@ import Foundation
 enum DDMConverter: CoordinateConverter {
     static func parse(_ input: String) -> Coordinate? {
         if let result = parseStandard(input) { return result }
+        if let result = parseDirectional(input) { return result }
         return parseLenient(input)
+    }
+
+    /// Accepts whitespace-separated DDM with explicit hemisphere letters, e.g.
+    /// `30 17.11'N 095 28.07'W` or `30 17.11' N 095 28.07' W`. No comma or
+    /// degree glyph required — this is the common BC SAR dispatch spelling.
+    private static func parseDirectional(_ input: String) -> Coordinate? {
+        let pattern = #"(?i)(\d+)\s+(\d+\.?\d*)\s*'?\s*([NS])\s+(\d+)\s+(\d+\.?\d*)\s*'?\s*([EW])"#
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: input, range: NSRange(input.startIndex..., in: input)) else {
+            return nil
+        }
+
+        func group(_ i: Int) -> String {
+            let range = Range(match.range(at: i), in: input)!
+            return String(input[range])
+        }
+
+        guard let latDeg = Double(group(1)),
+              let latMin = Double(group(2)),
+              let lonDeg = Double(group(4)),
+              let lonMin = Double(group(5)) else {
+            return nil
+        }
+
+        var lat = latDeg + latMin / 60.0
+        var lon = lonDeg + lonMin / 60.0
+
+        if group(3).uppercased() == "S" { lat = -lat }
+        if group(6).uppercased() == "W" { lon = -lon }
+
+        guard (-90...90).contains(lat), (-180...180).contains(lon) else {
+            return nil
+        }
+
+        return Coordinate(latitude: lat, longitude: lon)
     }
 
     private static func parseStandard(_ input: String) -> Coordinate? {

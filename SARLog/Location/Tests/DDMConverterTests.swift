@@ -26,6 +26,35 @@ final class DDMConverterTests: XCTestCase {
         XCTAssertNil(DDMConverter.parse(""))
     }
 
+    /// The documented acceptance input in PR 17 — the exact format BC SAR
+    /// dispatchers typically read out — must parse and feed Map/Convert.
+    func testParseDirectionalWhitespaceSeparated() {
+        let coord = DDMConverter.parse("30 17.11'N 095 28.07'W")
+        XCTAssertNotNil(coord)
+        XCTAssertTrue(coord!.isEqual(
+            to: Coordinate(latitude: 30.285167, longitude: -95.467833),
+            accuracy: 1e-4
+        ))
+    }
+
+    func testParseDirectionalSouthernEastern() {
+        let coord = DDMConverter.parse("33 52.128'S 151 12.558'E")
+        XCTAssertNotNil(coord)
+        XCTAssertTrue(coord!.isEqual(
+            to: Coordinate(latitude: -33.8688, longitude: 151.2093),
+            accuracy: 1e-4
+        ))
+    }
+
+    func testParseDirectionalLowercaseHemisphere() {
+        let coord = DDMConverter.parse("30 17.11'n 095 28.07'w")
+        XCTAssertNotNil(coord)
+        XCTAssertTrue(coord!.isEqual(
+            to: Coordinate(latitude: 30.285167, longitude: -95.467833),
+            accuracy: 1e-4
+        ))
+    }
+
     func testFormatNorthEast() {
         let result = DDMConverter.format(Coordinate(latitude: 41.40338, longitude: 2.17403))
         XCTAssertEqual(result, "41°24.2028'N, 2°10.4418'E")

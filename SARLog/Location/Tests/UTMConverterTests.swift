@@ -56,6 +56,19 @@ final class UTMConverterTests: XCTestCase {
         XCTAssertTrue(result.hasPrefix("18T"))
     }
 
+    /// Longitude exactly on the antimeridian would otherwise produce zone 61,
+    /// which no UTM parser accepts and which breaks the Map/Convert round
+    /// trip. Clamp to zone 60.
+    func testFormatAtAntimeridianClampsToZone60() {
+        let result = UTMConverter.format(Coordinate(latitude: 0.0, longitude: 180.0))
+        XCTAssertFalse(result.hasPrefix("61"), "UTM zone must not exceed 60; got \(result)")
+        XCTAssertTrue(result.hasPrefix("60"), "Expected zone 60 at the antimeridian; got \(result)")
+
+        // And the output must round-trip through our own parser.
+        let parsed = UTMConverter.parse(result)
+        XCTAssertNotNil(parsed, "Antimeridian UTM output must be re-parseable; got \(result)")
+    }
+
     func testRoundTrip() {
         let original = Coordinate(latitude: 41.40338, longitude: 2.17403)
         let formatted = UTMConverter.format(original)

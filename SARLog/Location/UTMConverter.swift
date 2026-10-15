@@ -120,7 +120,10 @@ enum UTMConverter: CoordinateConverter {
     }
 
     static func utmZone(lon: Double) -> Int {
-        Int((lon + 180) / 6) + 1
+        // Longitude 180° would produce zone 61 by the naïve formula; UTM
+        // zones are defined for 1…60, so clamp the antimeridian back to 60.
+        let raw = Int((lon + 180) / 6) + 1
+        return min(max(raw, 1), 60)
     }
 
     static func utmLetter(lat: Double) -> Character {
