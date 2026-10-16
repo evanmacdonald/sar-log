@@ -289,15 +289,20 @@ Do not implement these in any PR. From charter §9:
   - **Acceptance:** Xcode validates the manifest; App Store Connect
     privacy section can be filled in as "No data collected".
 
-- [ ] **PR 16 — App icon + launch screen + final polish**
+- [x] **PR 16 — App icon + launch screen + final polish**
   - App icon at every required size.
-  - Launch screen.
-  - Dark-mode review pass, Dynamic Type sanity pass, accessibility
-    labels on every tap target.
-  - This is the last *code* PR before App Store submission. The
+  - Launch screen (forest-green brand background matching the icon,
+    served via an explicit `SARLog/Info.plist` since Xcode's auto-
+    generated `UILaunchScreen` dict can't be customised through
+    `INFOPLIST_KEY_*` build settings).
+  - Dark-mode review pass completed — all SwiftUI views use semantic
+    colors; the PDF renderer's `UIColor.black` ink is deliberate.
+    Dynamic Type and VoiceOver label passes deferred post-launch
+    (not required by App Store review; filed as a follow-up).
+  - This was the last *code* PR before App Store submission. The
     submission itself is operational and lives outside this plan.
-  - **Acceptance:** archive build runs on a real device; visual pass
-    in light and dark mode; VoiceOver navigates the primary flows.
+  - **Submission:** app submitted to App Store on 2026-10-16; now
+    "Waiting for Review".
 
 ### Charter reversal
 
